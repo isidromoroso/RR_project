@@ -129,5 +129,33 @@ ggplot(bar_tbl, aes(Period, R2, fill = Period)) +
   theme_minimal()
 
 
+#Prediction bands by cluster
+for (cl in levels(oil_df$class)) {
+  class_tbl <- filter(oil_df, class == cl)
+  split <- initial_split(class_tbl, prop = 0.5)
+  train <- training(split)
+  test  <- testing(split)
+  
+  mod <- lm(cad ~ wcs, data = train)
+  preds <- predict(mod, newdata = test)
+  resid_sd <- sd(mod$residuals)
+  
+  plot_tbl <- test %>% mutate(pred = preds)
+  
+  ggplot(plot_tbl, aes(date)) +
+    geom_line(aes(y = pred, colour = "Fitted")) +
+    geom_line(aes(y = cad, colour = "Actual")) +
+    geom_ribbon(aes(ymin = pred - resid_sd, ymax = pred + resid_sd),
+                fill = "#0f1626", alpha = 0.6) +
+    geom_ribbon(aes(ymin = pred - 2 * resid_sd, ymax = pred + 2 * resid_sd),
+                fill = "#0f1626", alpha = 0.3) +
+    scale_colour_manual(values = c(Fitted = "#ab987a", Actual = "#ff533d")) +
+    labs(title = paste0(ifelse(cl == "1", "Before ", "After "),
+                        threshold_date,
+                        "\nCanadian Dollar Positions\n",
+                        "R Squared ", round(summary(mod)$r.squared * 100, 2), "%"),
+         y = "CADAUD", colour = NULL) +
+    theme_minimal()
+}
 
 
