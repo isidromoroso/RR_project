@@ -24,3 +24,24 @@ oil_df <- oil_df %>%
   mutate(date = as.POSIXct(date, format = "%m/%d/%Y")) %>%
   arrange(date) %>%
   select(date, all_of(cols_order))
+
+
+#simple regression (r2 vs CAD)
+
+get_r2 <- function(vec) summary(lm(cad ~ vec, data = oil_df))$r.squared
+
+r2_tbl <- tibble(variable = setdiff(cols_order, "cad")) %>%
+  mutate(r2 = map_dbl(variable, ~ get_r2(oil_df[[.x]])),
+         color = c(rep("#9499a6", 7), "#582a20", "#be7052", "#f2c083",
+                   "#9499a6", "#9499a6"))
+
+ggplot(r2_tbl, aes(variable, r2, fill = variable)) +
+  geom_col(width = 0.7, show.legend = FALSE) +
+  scale_fill_manual(values = r2_tbl$color) +
+  labs(title = "Regressions on Loonie", y = "R Squared", x = "Regressors") +
+  theme_minimal(base_size = 13) +
+  theme(panel.grid.major.x = element_blank())
+
+
+
+
