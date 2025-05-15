@@ -1,11 +1,10 @@
-
 # coding: utf-8
 
 # In[1]:
 
-
 import pandas as pd
 import os
+from pathlib import Path
 import matplotlib.pyplot as plt
 import copy
 import matplotlib.patches as mpatches
@@ -16,7 +15,6 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score,silhouette_samples
 from sklearn.model_selection import train_test_split
-os.chdir('d:/')
 
 
 # In[2]:
@@ -70,15 +68,12 @@ def get_line_params(x1,y1,x2,y2):
 
 # In[3]:
 
-
-df=pd.read_csv('wcs crude cadaud.csv',encoding='utf-8')
-df.set_index('date',inplace=True)
-
+df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/data') / 'wcs crude cadaud.csv',
+                 index_col='date', parse_dates=True, encoding='utf-8')
 
 # In[4]:
 
-
-df.index=pd.to_datetime(df.index,format='%m/%d/%Y')
+#**removed** df.index=pd.to_datetime(df.index,format='%m/%d/%Y')
 
 
 # In[5]:
