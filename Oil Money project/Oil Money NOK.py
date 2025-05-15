@@ -10,7 +10,7 @@
 #it suggested to trade on petrocurrency when the oil price went uprising 
 #plus overall volatility for forex market was low
 #the first thing is to build up a model to explore the causality
-#we split the historical datasets into two parts
+#we split the historical dfs into two parts
 #one for the model estimation, the other for the model validation
 #we do a regression on estimation horizon
 #we use linear regression to make a prediction on ideal price level
@@ -62,14 +62,12 @@ import numpy as np
 import seaborn as sns
 from sklearn.linear_model import ElasticNetCV as en 
 from statsmodels.tsa.stattools import adfuller as adf
-import os
-os.chdir('d:/')
+
 
 
 # In[2]:
 
-
-df=pd.read_csv('brent crude nokjpy.csv')
+df=pd.read_csv('data/brent crude nokjpy.csv')
 df.set_index(pd.to_datetime(df[list(df.columns)[0]]),inplace=True)
 del df[list(df.columns)[0]]
 
@@ -129,8 +127,7 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
 dual_axis_plot(df.index,df['nok'],df['interest rate'],
                fst_color='#34262b',sec_color='#cb2800',
                fig_size=(10,5),x_label='Date',
-               y_label1='NOKJPY',y_label2='Norges Bank Interest Rate 
-               %',
+               y_label1='NOKJPY',y_label2='Norges Bank Interest Rate %',
                legend1='NOKJPY',legend2='Interest Rate',
                grid=False,title='NOK vs Interest Rate')
 
@@ -274,6 +271,8 @@ for j in range(len(signals)):
 
 
 #next, we plot the usual positions as the first figure
+from datetime import datetime
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -290,7 +289,7 @@ ax.plot(pd.to_datetime('2017-12-20'),
          lw=0,marker='*',c='#f9d423', markersize=15, alpha=0.8,
          label='Potential Exit Point of Momentum Trading')
 
-plt.axvline('2017/11/15',linestyle=':',c='k',label='Exit')
+plt.axvline(datetime.strptime('2017/11/15', '%Y/%m/%d'), linestyle=':', c='k', label='Exit')
 plt.legend()
 plt.title('NOKJPY Positions')
 plt.ylabel('NOKJPY')
@@ -436,7 +435,7 @@ ax.fill_between(portfolio['2017-11-20':'2017-12-20'].index,
 plt.text(pd.to_datetime('2017-12-20'),
           (portfolio['total asset']+np.std(portfolio['total asset'])).loc['2017-12-20'],
           'What if we use MACD here?')
-plt.axvline('2017/11/15',linestyle=':',label='Exit',c='#ff847c')
+plt.axvline(datetime.strptime('2017/11/15', '%Y/%m/%d'),linestyle=':',label='Exit',c='#ff847c')
 plt.legend()
 plt.title('Portfolio Performance')
 plt.ylabel('Asset Value')
@@ -461,6 +460,9 @@ plt.show()
 # https://github.com/je-suis-tm/quant-trading/blob/master/Oil%20Money%20project/Oil%20Money%20Trading%20backtest.py
 import oil_money_trading_backtest as om
 
+dataset = df.loc['2014':'2015-08-20']
+dataset.reset_index(inplace=True)
+
 #generate signals,monitor portfolio performance
 #plot positions and total asset
 signals=om.signal_generation(dataset,'brent','nok',om.oil_money)
@@ -478,9 +480,9 @@ om.profit(p,'nok')
 dic={}
 for holdingt in range(5,20):
     for stopp in np.arange(0.3,1.1,0.05):
-        signals=om.signal_generation(dataset,'brent','nok',om.oil_money \
-                                     holding_threshold=holdingt, \
-                                     stop=stopp)
+        signals=om.signal_generation(dataset,'brent','nok',om.oil_money,
+                                     holding_threshold=holdingt,
+                                    stop=stopp)
         
         p=om.portfolio(signals,'nok')
         dic[holdingt,stopp]=p['asset'].iloc[-1]/p['asset'].iloc[0]-1
