@@ -68,6 +68,16 @@ ggplot(crude_tbl, aes(date, value, colour = blend)) +
   labs(title = "Crude Oil Blends", y = "Normalised (base 1)", x = NULL) +
   theme_minimal()
 
+#dual axis example CAD vs WCS
+plot_dual <- function(y1, y2, lab1, lab2, ttl) {
+  ggplot(oil_df, aes(date)) +
+    geom_line(aes(y = y1, colour = lab1)) +
+    geom_line(aes(y = y2, colour = lab2)) +
+    scale_colour_manual(values = c(lab1 = "#a5a77f", lab2 = "#d8dc2c")) +
+    scale_y_continuous(name = lab1, sec.axis = sec_axis(~ ., name = lab2)) +
+    labs(title = ttl, x = NULL, colour = NULL) +
+    theme_minimal()
+}
 
 
 
