@@ -89,3 +89,15 @@ signal_generation <- function(dataset, x, y, method,
   return(df)
 }
 
+# Portfolio function
+portfolio <- function(signals, close_price, capital0 = 5000) {
+  positions <- floor(capital0 / max(signals[[close_price]], na.rm = TRUE))
+  portfolio <- data.frame(
+    close = signals[[close_price]],
+    signals = signals$signals
+  )
+  portfolio$holding <- cumsum(portfolio$signals) * portfolio$close * positions
+  portfolio$cash <- capital0 - cumsum(portfolio$signals * portfolio$close * positions)
+  portfolio$asset <- portfolio$holding + portfolio$cash
+  return(portfolio)
+}
