@@ -7,7 +7,7 @@ library(zoo)
 library(xts)
 library(PerformanceAnalytics)
 
-# Initialization function (similar to oil_money in Python)
+# Oil money function
 oil_money <- function(dataset) {
   df <- dataset
   df$signals <- 0
@@ -146,10 +146,8 @@ main <- function() {
   
   p <- portfolio(signals, "nok")
   p$date <- df$date
-  
-  dev.new()
+
   plot_signals(signals[387:600, ], "nok")
-  dev.new()
   graph_profit(p[387:600, ], "nok")
   
 }
