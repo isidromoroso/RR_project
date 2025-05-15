@@ -78,6 +78,37 @@ plot_dual <- function(y1, y2, lab1, lab2, ttl) {
     labs(title = ttl, x = NULL, colour = NULL) +
     theme_minimal()
 }
+plot_dual(oil_df$cad, oil_df$wcs, "CAD", "WCS", "Loonie vs WCS")
+
+#K-means clustering CAD,WCS time index
+oil_df <- oil_df %>% mutate(idx = row_number())
+X <- oil_df %>% select(cad, wcs, idx)
+
+sse <- map_dbl(1:7, ~ kmeans(X, .x, nstart = 20)$tot.withinss / 1e4)
+a  <- (sse[1] - last(sse)) / (0 - (length(sse) - 1))
+b  <- sse[1] - a * 0
+perp_dist <- function(x, y) abs((y - a * x - b) / sqrt(a^2 + 1))
+distances <- map_dbl(seq_along(sse) - 1, ~ perp_dist(.x, sse[.x + 1]))
+
+elbow_tbl <- tibble(k = 1:7, SSE = sse, Distance = distances)
+ggplot(elbow_tbl, aes(k, SSE)) +
+  geom_line(colour = "#116466") +
+  geom_line(aes(k, Distance), colour = "#e85a4f") +
+  labs(title = "Elbow Method for K-means", x = "Clusters") +
+  theme_minimal()
+
+sil_scores <- map_dbl(2:7, ~ mean(silhouette(kmeans(X, .x, nstart = 20)$cluster, dist(X))[, 3]))
+best_k <- 2  # matches Python
+set.seed(42)
+km <- kmeans(X, centers = best_k, nstart = 25)
+oil_df$class <- factor(km$cluster)
+
+threshold_idx  <- max(which(oil_df$class == 1))
+threshold_date <- oil_df$date[threshold_idx]
+
+plot_ly(oil_df, x = ~wcs, y = ~cad, z = ~idx, color = ~class,
+        colors = c("#faed26", "#46344e"), type = "scatter3d", mode = "markers") %>%
+  layout(title = "K-means Clusters on Loonie")
 
 
 
