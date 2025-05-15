@@ -111,5 +111,23 @@ plot_ly(oil_df, x = ~wcs, y = ~cad, z = ~idx, color = ~class,
   layout(title = "K-means Clusters on Loonie")
 
 
+#Before / after regression comparison
+before_tbl <- filter(oil_df, idx <= threshold_idx)
+after_tbl  <- filter(oil_df, idx > threshold_idx)
+
+before_r2 <- summary(lm(cad ~ wcs, data = before_tbl))$r.squared
+after_r2  <- summary(lm(cad ~ wcs, data = after_tbl))$r.squared
+
+bar_tbl <- tibble(Period = c(paste0("Before ", threshold_date),
+                             paste0("After ", threshold_date)),
+                  R2 = c(before_r2, after_r2))
+
+ggplot(bar_tbl, aes(Period, R2, fill = Period)) +
+  geom_col(show.legend = FALSE) +
+  scale_fill_manual(values = c("Before" = "#f172a1", "After" = "#a1c3d1")) +
+  labs(title = "Cluster + Regression", y = "R Squared") +
+  theme_minimal()
+
+
 
 
