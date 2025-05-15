@@ -12,8 +12,6 @@ import copy
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-os.chdir('d:/')
 
 
 # In[2]:
@@ -131,19 +129,19 @@ def signal_generation(dataset,x,y,method, \
                     #this would fill in the blank once our model turns invalid
                     #when we have a new valid model
                     #the new forecast and confidence intervals would cover the former one
-                    df.at[i:,'forecast']= \
+                    df.loc[i:,'forecast']= \
                     m.predict(sm.add_constant(df[x].iloc[i:]))
                     
-                    df.at[i:,'pos2 sigma']= \
+                    df.loc[i:,'pos2 sigma']= \
                     df['forecast'].iloc[i:]+2*sigma
                     
-                    df.at[i:,'neg2 sigma']= \
+                    df.loc[i:,'neg2 sigma']= \
                     df['forecast'].iloc[i:]-2*sigma
                     
-                    df.at[i:,'pos1 sigma']= \
+                    df.loc[i:,'pos1 sigma']= \
                     df['forecast'].iloc[i:]+sigma
                     
-                    df.at[i:,'neg1 sigma']= \
+                    df.loc[i:,'neg1 sigma']= \
                     df['forecast'].iloc[i:]-sigma
             
             #once we have a valid model
@@ -272,7 +270,8 @@ def profit(portfolio,close_price):
 
 def main():
     
-    df=pd.read_csv('brent crude nokjpy.csv')
+    df = pd.read_csv('data/brent crude nokjpy.csv')
+    df.columns = df.columns.str.replace('\ufeff', '')
     signals=signal_generation(df,'brent','nok',oil_money)
     p=portfolio(signals,'nok')
     
@@ -291,3 +290,5 @@ def main():
 if __name__ == '__main__':
     main()
 
+
+# %%
