@@ -68,7 +68,7 @@ def get_line_params(x1,y1,x2,y2):
 
 # In[3]:
 
-df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/data') / 'wcs crude cadaud.csv',
+df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_project/Repo/RR_project/Oil Money project/data') / 'wcs crude cadaud.csv',
                  index_col='date', parse_dates=True, encoding='utf-8')
 
 # In[4]:
@@ -127,12 +127,11 @@ for i in temp:
 plt.title('Regressions on Loonie')
 plt.ylabel('R Squared\n')
 plt.xlabel('\nRegressors')
-plt.xticks(np.arange(len(temp))+width,
+plt.xticks(np.arange(len(temp)-1)+width,
            ['Yuan', 'Sterling', 'Dollar', 'Euro', 'KRW',
              'MXN', 'Gas', 'WCS', 'Edmonton',
              'WTI', 'Gold', 'Yen'],fontsize=10)
 plt.show()
-
 
 # In[7]:
 
@@ -279,8 +278,8 @@ ax.scatter3D(xdata[df['class']==1],ydata[df['class']==1],
              zdata[df['class']==1],c='#46344e',s=10,alpha=0.5,
              label='After {}'.format(threshold.strftime('%Y-%m-%d')))
 ax.grid(False)
-for i in ax.w_xaxis, ax.w_yaxis, ax.w_zaxis:
-    i.pane.set_visible(False)  
+for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+    axis.pane.set_visible(False)
     
 ax.set_xlabel('WCS')
 ax.set_ylabel('Loonie')
