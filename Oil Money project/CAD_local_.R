@@ -43,5 +43,32 @@ ggplot(r2_tbl, aes(variable, r2, fill = variable)) +
   theme(panel.grid.major.x = element_blank())
 
 
+#normalised currency and crude lines
+norm <- function(x) x / x[1]
+
+curr_tbl <- oil_df %>%
+  select(date, cad, cny, gbp) %>%
+  mutate(across(-date, norm)) %>%
+  pivot_longer(-date, names_to = "currency", values_to = "value")
+
+ggplot(curr_tbl, aes(date, value, colour = currency)) +
+  geom_line() +
+  scale_colour_manual(values = c(cad = "#015249", cny = "#77c9d4", gbp = "#57bc90")) +
+  labs(title = "Loonie vs Yuan vs Sterling", y = "Normalised (base 1)", x = NULL) +
+  theme_minimal()
+
+crude_tbl <- oil_df %>%
+  select(date, wti, wcs, edmonton) %>%
+  mutate(across(-date, norm)) %>%
+  pivot_longer(-date, names_to = "blend", values_to = "value")
+
+ggplot(crude_tbl, aes(date, value, colour = blend)) +
+  geom_line(alpha = 0.6) +
+  scale_colour_manual(values = c(wti = "#2a78b2", wcs = "#7b68ee", edmonton = "#110b3c")) +
+  labs(title = "Crude Oil Blends", y = "Normalised (base 1)", x = NULL) +
+  theme_minimal()
+
+
+
 
 
