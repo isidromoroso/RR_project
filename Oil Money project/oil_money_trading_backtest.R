@@ -101,3 +101,34 @@ portfolio <- function(signals, close_price, capital0 = 5000) {
   portfolio$asset <- portfolio$holding + portfolio$cash
   return(portfolio)
 }
+
+# Plotting fitted vs actual price
+plot_signals <- function(signals, close_price) {
+  data <- subset(signals, forecast != 0)
+  data$date <- as.Date(data$date)
+  p <- ggplot(data, aes(x = date)) +
+    geom_line(aes(y = forecast, color = "Fitted"), alpha = 0.7) +
+    geom_line(aes_string(y = close_price, color = shQuote("Actual")), alpha = 0.7) +
+    geom_ribbon(aes(ymin = `neg1 sigma`, ymax = `pos1 sigma`), fill = "#011f4b", alpha = 0.3) +
+    geom_ribbon(aes(ymin = `neg2 sigma`, ymax = `pos2 sigma`), fill = "#ffc425", alpha = 0.3) +
+    geom_point(data = subset(data, signals == 1), aes_string(y = close_price), color = "#00b159", shape = 24, size = 3) +
+    geom_point(data = subset(data, signals == -1), aes_string(y = close_price), color = "#ff6f69", shape = 25, size = 3) +
+    labs(title = paste("Oil Money Project\n", toupper(close_price), "Positions"),
+         x = "Date", y = "Price") +
+    scale_color_manual(values = c("Fitted" = "#f4f4f8", "Actual" = "#3c2f2f")) +
+    theme_minimal()
+  print(p)
+}
+
+# Plotting portfolio performance
+graph_profit <- function(portfolio, close_price) {
+  portfolio$date <- as.Date(portfolio$date)
+  p <- ggplot(portfolio, aes(x = date, y = asset)) +
+    geom_line(color = "#58668b") +
+    geom_point(data = subset(portfolio, signals == 1), aes(y = asset), color = "#00b159", shape = 24, size = 3) +
+    geom_point(data = subset(portfolio, signals == -1), aes(y = asset), color = "#ff6f69", shape = 25, size = 3) +
+    labs(title = paste("Oil Money Project\n", toupper(close_price), "Total Asset"),
+         x = "Date", y = "Asset Value") +
+    theme_minimal()
+  print(p)
+}
