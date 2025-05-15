@@ -7,7 +7,7 @@ library(zoo)
 library(xts)
 library(PerformanceAnalytics)
 
-# Oil money function
+# Initialization function (similar to oil_money in Python)
 oil_money <- function(dataset) {
   df <- dataset
   df$signals <- 0
@@ -132,3 +132,27 @@ graph_profit <- function(portfolio, close_price) {
     theme_minimal()
   print(p)
 }
+
+# Main function
+main <- function() {
+  df <- read.csv("data/brent crude nokjpy.csv", check.names = FALSE)
+  colnames(df) <- gsub("﻿", "", colnames(df))
+  colnames(df)[1] <- "date"
+  
+  df$date <- as.Date(df$date, format = "%m/%d/%Y")
+  
+  signals <- signal_generation(df, "brent", "nok", oil_money)
+  signals$date <- df$date
+  
+  p <- portfolio(signals, "nok")
+  p$date <- df$date
+  
+  dev.new()
+  plot_signals(signals[387:600, ], "nok")
+  dev.new()
+  graph_profit(p[387:600, ], "nok")
+  
+}
+
+# Run main
+main()
