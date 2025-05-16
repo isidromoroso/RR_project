@@ -69,5 +69,12 @@ dual_axis_plot <- function(x, y1, y2, y1lab, y2lab, title) {
 # Sample dual axis plots (COP vs Gold)
 dual_axis_plot(rownames(df), df$cop, df$gold, "COP", "Gold LBMA", "COP VS Gold")
 
-
+# Before/after regression comparison
+before_model <- lm(cop ~ vasconia, data = df[rownames(df) <= "2016", ])
+after_model <- lm(cop ~ vasconia, data = df[rownames(df) >= "2017", ])
+barplot(c(summary(before_model)$r.squared, summary(after_model)$r.squared),
+        names.arg = c("Before 2017", "After 2017"),
+        col = c("#82b74b", "#5DD39E"),
+        ylab = "R Squared",
+        main = "Before/After Regression")
 
