@@ -108,4 +108,16 @@ ggplot(results, aes(x = return * 100)) +
   geom_histogram(fill = "#b2660e", bins = 20, width = 2) +
   labs(title = "Distribution of Return on COP Trading", x = "Return (%)", y = "Frequency")
 
+# Heatmap of returns
+heatmap_data <- dcast(results, holding ~ stop, value.var = "return")
+rownames(heatmap_data) <- heatmap_data$holding
+heatmap_data$holding <- NULL
+
+library(pheatmap)
+pheatmap(as.matrix(heatmap_data) * 100,
+         cluster_rows = FALSE,
+         cluster_cols = FALSE,
+         main = "Profit Heatmap",
+         color = viridis::viridis(100))
+
 
