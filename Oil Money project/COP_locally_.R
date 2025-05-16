@@ -78,3 +78,25 @@ barplot(c(summary(before_model)$r.squared, summary(after_model)$r.squared),
         ylab = "R Squared",
         main = "Before/After Regression")
 
+# Train-test split and prediction band
+library(rsample)
+data_after <- df[rownames(df) >= "2017", ]
+split <- initial_split(data_after, prop = 0.5)
+train <- training(split)
+test <- testing(split)
+
+model <- lm(cop ~ vasconia, data = test)
+pred <- predict(model, newdata = test)
+resid_sd <- sd(model$residuals)
+
+test$date <- as.Date(rownames(test))
+
+ggplot(test, aes(x = date)) +
+  geom_line(aes(y = cop), color = "#ffd604", label = "Actual") +
+  geom_line(aes(y = pred), color = "#FEFBD8", label = "Fitted") +
+  geom_ribbon(aes(ymin = pred - resid_sd, ymax = pred + resid_sd), fill = "#F4A688", alpha = 0.6) +
+  geom_ribbon(aes(ymin = pred - 2 * resid_sd, ymax = pred + 2 * resid_sd), fill = "#8c7544", alpha = 0.4) +
+  labs(title = paste("Colombian Peso Positions\nR Squared:", round(summary(model)$r.squared * 100, 2), "%"),
+       x = "Date", y = "COPAUD")
+
+
