@@ -41,3 +41,16 @@ barplot(regression_results,
         ylab = "R Squared",
         names.arg = toupper(names(regression_results)),
         las = 2)
+
+
+# Normalize WTI, Brent, Vasconia
+df_norm <- df %>%
+  mutate(across(c(vasconia, brent, wti), ~ .x / .x[1])) %>%
+  select(date = rownames(df), vasconia, brent, wti)
+
+df_long <- melt(df_norm, id.vars = "date")
+
+ggplot(df_long, aes(x = as.Date(date), y = value, color = variable)) +
+  geom_line(alpha = 0.6) +
+  labs(title = "Crude Oil Blends", x = "Date", y = "Normalized Value by 100")
+
