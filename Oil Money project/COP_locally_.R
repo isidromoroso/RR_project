@@ -54,3 +54,20 @@ ggplot(df_long, aes(x = as.Date(date), y = value, color = variable)) +
   geom_line(alpha = 0.6) +
   labs(title = "Crude Oil Blends", x = "Date", y = "Normalized Value by 100")
 
+
+# Dual axis plot helper
+dual_axis_plot <- function(x, y1, y2, y1lab, y2lab, title) {
+  df_plot <- data.frame(date = x, y1 = y1, y2 = y2)
+  ggplot(df_plot, aes(x = as.Date(date))) +
+    geom_line(aes(y = y1, color = y1lab)) +
+    geom_line(aes(y = y2, color = y2lab)) +
+    scale_color_manual(values = c(y1lab = "#96CEB4", y2lab = "#FFA633")) +
+    labs(title = title, x = "Date", y = "") +
+    theme_minimal()
+}
+
+# Sample dual axis plots (COP vs Gold)
+dual_axis_plot(rownames(df), df$cop, df$gold, "COP", "Gold LBMA", "COP VS Gold")
+
+
+
