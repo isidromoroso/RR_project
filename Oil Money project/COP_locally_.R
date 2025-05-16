@@ -18,3 +18,26 @@ setwd("C:\\Users\\Lenovo\\OneDrive\\Pulpit\\RR_project\\repo\\RR_project\\Oil Mo
 df <- read_csv("vas crude copaud.csv")
 df$date <- ymd(df$date)
 df <- df %>% column_to_rownames("date")
+
+# Regressions: R-squared by predictor
+regression_results <- sapply(setdiff(colnames(df), "cop"), function(var) {
+  model <- lm(cop ~ get(var), data = df)
+  summary(model)$r.squared
+})
+
+regression_results <- sort(regression_results, decreasing = TRUE)
+
+# Bar plot of R-squared values
+colors <- sapply(names(regression_results), function(i) {
+  if (i == 'wti') return('#447294')
+  else if (i == 'brent') return('#8fbcdb')
+  else if (i == 'vasconia') return('#f4d6bc')
+  else return('#cdc8c8')
+})
+
+barplot(regression_results,
+        col = colors,
+        main = "Regressions on COP",
+        ylab = "R Squared",
+        names.arg = toupper(names(regression_results)),
+        las = 2)
