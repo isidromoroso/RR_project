@@ -99,4 +99,10 @@ ggplot(test, aes(x = date)) +
   labs(title = paste("Colombian Peso Positions\nR Squared:", round(summary(model)$r.squared * 100, 2), "%"),
        x = "Date", y = "COPAUD")
 
+# Optimization over parameters
+results <- expand.grid(holding = 5:19, stop = seq(0.001, 0.0045, 0.0005))
+results$return <- runif(nrow(results), min = -0.05, max = 0.15)  # demo values
+
+
+
 
