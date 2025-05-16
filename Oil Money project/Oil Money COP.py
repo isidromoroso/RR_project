@@ -11,7 +11,7 @@ import statsmodels.api as sm
 import seaborn as sns
 import numpy as np
 from sklearn.model_selection import train_test_split
-os.chdir('k:/')
+
 
 
 # In[2]:
@@ -51,7 +51,7 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
 # In[3]:
 
 #read dataframe    
-df=pd.read_csv('vas crude copaud.csv',encoding='utf-8')
+df=pd.read_csv(r'C:\Users\Lenovo\OneDrive\Pulpit\RR_project\repo\RR_project\Oil Money project\data\vas crude copaud.csv',encoding='utf-8')
 df.set_index('date',inplace=True)
 df.index=pd.to_datetime(df.index)
 

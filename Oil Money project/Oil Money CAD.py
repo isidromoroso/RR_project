@@ -280,7 +280,7 @@ ax.scatter3D(xdata[df['class']==1],ydata[df['class']==1],
 ax.grid(False)
 for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
     axis.pane.set_visible(False)
-    
+
 ax.set_xlabel('WCS')
 ax.set_ylabel('Loonie')
 ax.set_zlabel('Date')
