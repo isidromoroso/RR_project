@@ -103,6 +103,9 @@ ggplot(test, aes(x = date)) +
 results <- expand.grid(holding = 5:19, stop = seq(0.001, 0.0045, 0.0005))
 results$return <- runif(nrow(results), min = -0.05, max = 0.15)  # demo values
 
-
+# Distribution of return
+ggplot(results, aes(x = return * 100)) +
+  geom_histogram(fill = "#b2660e", bins = 20, width = 2) +
+  labs(title = "Distribution of Return on COP Trading", x = "Return (%)", y = "Frequency")
 
 
