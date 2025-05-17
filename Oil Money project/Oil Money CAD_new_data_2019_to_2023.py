@@ -1,11 +1,9 @@
 # coding: utf-8
-
 # making graphs downloadable
 import matplotlib
 matplotlib.use('Agg')      # switch to a non-interactive backend
 import matplotlib.pyplot as plt
 plt.ioff()                 # turn off interactive mode
-
 
 # In[1]:
 
@@ -75,7 +73,7 @@ def get_line_params(x1,y1,x2,y2):
 
 # In[3]:
 
-df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_project/Repo/RR_project/Oil Money project/data') / 'wcs crude cadaud.csv',
+df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data') / 'merged_with_edmonton_interpolated_updated.csv',
                  index_col='date', parse_dates=True, encoding='utf-8')
 
 # In[4]:
@@ -287,7 +285,7 @@ ax.scatter3D(xdata[df['class']==1],ydata[df['class']==1],
 ax.grid(False)
 for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
     axis.pane.set_visible(False)
-
+    
 ax.set_xlabel('WCS')
 ax.set_ylabel('Loonie')
 ax.set_zlabel('Date')
@@ -377,12 +375,11 @@ for i in range(2):
     plt.show()
 
 
-
 #downloading all outputted figures in the file
 import os
 
-base_dir   = '/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/'
-out_folder = os.path.join(base_dir, 'original_graphs')
+base_dir   = '/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data'
+out_folder = os.path.join(base_dir, 'graphs')
 os.makedirs(out_folder, exist_ok=True)
 
 for idx, num in enumerate(plt.get_fignums(), start=1):
@@ -392,4 +389,3 @@ for idx, num in enumerate(plt.get_fignums(), start=1):
         dpi=300, bbox_inches='tight'
     )
 plt.close('all')
-
