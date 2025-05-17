@@ -1,5 +1,12 @@
 # coding: utf-8
 
+# making graphs downloadable
+import matplotlib
+matplotlib.use('Agg')      # switch to a non-interactive backend
+import matplotlib.pyplot as plt
+plt.ioff()                 # turn off interactive mode
+
+
 # In[1]:
 
 import pandas as pd
@@ -371,4 +378,18 @@ for i in range(2):
 
 
 
+#downloading all outputted figures in the file
+import os
+
+base_dir   = '/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/'
+out_folder = os.path.join(base_dir, 'original_graphs')
+os.makedirs(out_folder, exist_ok=True)
+
+for idx, num in enumerate(plt.get_fignums(), start=1):
+    fig = plt.figure(num)
+    fig.savefig(
+        os.path.join(out_folder, f'figure_{idx}.png'),
+        dpi=300, bbox_inches='tight'
+    )
+plt.close('all')
 
