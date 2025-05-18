@@ -253,5 +253,51 @@ ggplot(signals, aes(x = date)) +
   labs(title = "Fitted vs Actual", x = "Date", y = "NOKJPY") +
   theme_minimal()
 
+# Normalized price trend plot 
+# Normalize prices by dividing each by its first value and multiplying by 100
+df_norm <- df %>%
+  mutate(across(c(nok, usd, eur, gbp, brent), ~ . / .[1] * 100)) %>%
+  select(date, nok, usd, eur, gbp, brent) %>%
+  pivot_longer(cols = -date, names_to = "currency", values_to = "value")
+
+# Custom colors
+color_map <- c(
+  nok   = "#ff8c94",  # Norwegian Krone
+  usd   = "#9de0ad",  # US Dollar
+  eur   = "#45ada8",  # Euro
+  gbp   = "#f8b195",  # UK Sterling
+  brent = "#6c5b7c"   # Brent Crude
+)
+
+# Custom labels for legend
+label_map <- c(
+  nok   = "Norwegian Krone",
+  usd   = "US Dollar",
+  eur   = "Euro",
+  gbp   = "UK Sterling",
+  brent = "Brent Crude"
+)
+
+# Create plot
+ggplot(df_norm, aes(x = date, y = value, color = currency)) +
+  geom_line(alpha = 0.9) +
+  scale_color_manual(
+    values = color_map,
+    labels = label_map
+  ) +
+  labs(
+    title = "Trend",
+    x = "Date",
+    y = "Normalized Price (Base = 100)",
+    color = "Asset"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(face = "bold"),
+    legend.position = "right"  # Puedes cambiar a "bottom", "left", etc.
+  )
+
+
 
 
