@@ -285,7 +285,13 @@ def main():
     #becuz the visualization of 5 years data could be too messy
     plot(signals.iloc[387:600],'nok')
     profit(p.iloc[387:600],'nok')
-    
+
+    # Extract the dates corresponding to rows 387 to 600
+    date_range = signals.iloc[387:600].index
+
+    # Print the first and last date in that range
+    print("Date range for rows 387 to 600:")
+    print(f"From: {date_range[0].date()} To: {date_range[-1].date()}")
 
 if __name__ == '__main__':
     main()

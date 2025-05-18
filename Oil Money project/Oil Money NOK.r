@@ -381,7 +381,7 @@ ggplot(portfolio, aes(x = date, y = total_asset)) +
 # Oil_money_trading_backtest improved trading strategy optimised with gridsearch
 # Import and run backtest module
 source("oil_money_trading_backtest.r")
-portfolio_data <- df %>% filter(date >= as.Date("2014-01-01"), date <= as.Date("2015-08-20"))
+portfolio_data <- df %>% filter(date >= as.Date("2014-10-23"), date <= as.Date("2015-08-20"))
 signals_bt   <- signal_generation(portfolio_data, "brent", "nok", oil_money)
 portfolio_bt <- portfolio(signals_bt, "nok")
 portfolio_bt$date <- portfolio_data$date
@@ -389,7 +389,7 @@ plot_signals(signals_bt, "nok")
 graph_profit(portfolio_bt, "nok")
 
 # Grid search for parameters
-results <- expand.grid(h = 5:19, s = seq(0.3, 1.1, 0.05)) %>%
+results <- expand.grid(h = 5:19, s = seq(0.3, 1.05, 0.05)) %>%
   mutate(return = map2_dbl(h, s, ~{
     sig <- signal_generation(portfolio_data, "brent", "nok", oil_money, holding_threshold = .x, stop = .y)
     port <- portfolio(sig, "nok")
@@ -398,7 +398,7 @@ results <- expand.grid(h = 5:19, s = seq(0.3, 1.1, 0.05)) %>%
 
 # Trading returns distribution histogram (on NOK)
 ggplot(results, aes(x = return * 100)) +
-  geom_histogram(binwidth = 0.5, fill = "#f09e8c", color = "white") +
+  geom_histogram(binwidth = 0.50, fill = "#f09e8c", color = "white") +
   labs(title = "Distribution of Return on NOK Trading", x = "Return (%)", y = "Frequency") +
   theme_minimal()
 
