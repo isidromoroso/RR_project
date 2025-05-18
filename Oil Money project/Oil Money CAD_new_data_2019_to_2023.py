@@ -76,6 +76,16 @@ def get_line_params(x1,y1,x2,y2):
 df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data') / 'merged_with_edmonton_interpolated_updated.csv',
                  index_col='date', parse_dates=True, encoding='utf-8')
 
+# ─── STEP A ─── make sure iloc[0] is really the earliest non‐zero price ─────────
+df.sort_index(inplace=True)
+ # (optional) if your feed ever drops a 0 price use:
+ # df = df[df['wti'] != 0]
+
+# ─── STEP B ─── pull out just the three series & normalize by the true first row ──
+raw = df[["wti","wcs","edmonton"]]
+df_norm = raw.divide(raw.iloc[0]).multiply(100)
+
+
 # In[4]:
 
 #**removed** df.index=pd.to_datetime(df.index,format='%m/%d/%Y')
@@ -159,24 +169,50 @@ plt.show()
 
 # In[8]:
 
-#normalized value of wti,wcs and edmonton
+import pandas as pd
+import matplotlib.pyplot as plt
 
-ax=plt.figure(figsize=(10,5)).add_subplot(111)
+# ─── PREP ─────────────────────────────────────────────────────────────────────
+# 1) make sure your index is datetime & sorted
+df.index = pd.to_datetime(df.index)
+df = df.sort_index()
+
+# 2) trim to the first date where WTI, WCS and Edmonton all have data
+first_common = max(
+    df['wti'].first_valid_index(),
+    df['wcs'].first_valid_index(),
+    df['edmonton'].first_valid_index()
+)
+df3 = df.loc[first_common:, ['wti', 'wcs', 'edmonton']]
+
+# 3) grab that first-common row as your baseline
+baseline = df3.iloc[0]
+
+# 4) normalize
+df_norm = df3.divide(baseline)
+
+#plot
+fig, ax = plt.subplots(figsize=(10, 5))
+
+# kill the top/right spines
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 
-(df['wti']/df['wti'].iloc[0]).plot(c='#2a78b2',
-                                   label='WTI',alpha=0.5)
-(df['wcs']/df['wcs'].iloc[0]).plot(c='#7b68ee',
-                                   label='WCS',alpha=0.5)
-(df['edmonton']/df['edmonton'].iloc[0]).plot(c='#110b3c',
-                                             label='Edmonton',alpha=0.5)
-plt.legend(loc=0)
-plt.xlabel('Date')
-plt.ylabel('Normalized Value by 100')
-plt.title('Crude Oil Blends')
-plt.show()
+# plot
+df_norm['wti'    ].plot(ax=ax, color='#2a78b2', label='WTI',      alpha=0.5)
+df_norm['wcs'    ].plot(ax=ax, color='#7b68ee', label='WCS',      alpha=0.5)
+df_norm['edmonton'].plot(ax=ax, color='#110b3c', label='Edmonton', alpha=0.5)
 
+# lock the y‐axis exactly to [0.2, 1.0]
+ax.set_ylim(-1, 3)
+
+ax.set_xlabel('Date')
+ax.set_ylabel('Normalized Value (relative to first)')
+ax.set_title('Crude Oil Blends')
+ax.legend(loc='best')
+
+plt.tight_layout()
+plt.show()
 
 # In[9]:
 
