@@ -175,6 +175,8 @@ m=en(alphas=[0.0001, 0.0005, 0.001, 0.01, 0.1, 1, 10],
      l1_ratio=[.01, .1, .5, .9, .99],  max_iter=5000).fit(x0[x0.index<'2017-04-25'], y)  
 print(m.intercept_,m.coef_)
 
+print("Best l1_ratio:", m.l1_ratio_) # Print Best l1_ratio and best alpha to reproduce same parameter in R
+print("Best alpha:", m.alpha_)
 
 #elastic net estimation results:
 #3.79776228406 [ 0.00388958  0.01992038  0.02823187  0.00050092]
@@ -547,3 +549,5 @@ plt.style.use('default')
 #it is correlated with the length of holding period
 #the ideal one should be 9 trading days
 #as for stop loss/profit point could range from 0.6 to 1.05
+
+# %%
