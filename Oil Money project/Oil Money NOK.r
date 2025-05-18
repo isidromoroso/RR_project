@@ -381,7 +381,7 @@ ggplot(portfolio, aes(x = date, y = total_asset)) +
 # Oil_money_trading_backtest improved trading strategy optimised with gridsearch
 # Import and run backtest module
 source("oil_money_trading_backtest.r")
-portfolio_data <- df %>% filter(date >= as.Date("2014-01-01"), date <= as.Date("2015-08-20"))
+portfolio_data <- df %>% filter(date >= as.Date("2014-10-23"), date <= as.Date("2015-08-20"))
 signals_bt   <- signal_generation(portfolio_data, "brent", "nok", oil_money)
 portfolio_bt <- portfolio(signals_bt, "nok")
 portfolio_bt$date <- portfolio_data$date

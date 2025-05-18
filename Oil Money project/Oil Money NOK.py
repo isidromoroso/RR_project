@@ -462,7 +462,7 @@ plt.show()
 # https://github.com/je-suis-tm/quant-trading/blob/master/Oil%20Money%20project/Oil%20Money%20Trading%20backtest.py
 import oil_money_trading_backtest as om
 
-dataset = df.loc['2014':'2015-08-20']
+dataset = df.loc['2014-10-23':'2015-08-20']
 dataset.reset_index(inplace=True)
 
 #generate signals,monitor portfolio performance
