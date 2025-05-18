@@ -317,6 +317,66 @@ summary(adf_test)
 # Show summary of the OLS regression
 summary(ols_model)
 
+# Performance analysis of signals strategy (Initial capital 2000, position size 100)
+# Perform PnL (Profit and Loss) analysis
+initial_capital <- 2000
+position_size <- 100
+
+# Create portfolio dataframe using the same index as signals
+portfolio <- data.frame(date = signals$date)
+rownames(portfolio) <- signals$date
+
+# Calculate holding value: NOK price × cumulative position × position size
+portfolio$holding <- signals$nok * signals$cumsum * position_size
+
+# Calculate cash position: initial capital - cumulative cost of trades
+portfolio$cash <- initial_capital - cumsum(signals$nok * signals$signals * position_size)
+
+# Total asset value = holding + cash
+portfolio$total_asset <- portfolio$holding + portfolio$cash
+
+# Store signals for reference
+portfolio$signals <- signals$signals
+
+# Filter portfolio between 2017-10-01 and 2018-01-01
+portfolio <- portfolio[portfolio$date > as.Date("2017-10-01") & portfolio$date < as.Date("2018-01-01"), ]
+
+# Ensure 'date' column is of Date type
+portfolio$date <- as.Date(portfolio$date)
+
+# Compute standard deviation of total asset
+asset_sd <- sd(portfolio$total_asset, na.rm = TRUE)
+
+# Create subset for shaded region between 2017-11-20 and 2017-12-20
+highlight_range <- portfolio %>%
+  filter(date >= as.Date("2017-11-20") & date <= as.Date("2017-12-20")) %>%
+  mutate(upper = total_asset + asset_sd,
+         lower = total_asset - asset_sd)
+
+# Create subsets for LONG and SHORT signal markers
+longs <- portfolio %>% filter(signals > 0)
+shorts <- portfolio %>% filter(signals < 0)
+
+# Plot portfolio performance
+ggplot(portfolio, aes(x = date, y = total_asset)) +
+  geom_line(color = "#594f4f", alpha = 0.5, size = 0.7) +
+  geom_point(data = longs, aes(x = date, y = total_asset),
+             shape = 24, color = "#2a3457", fill = "#2a3457", size = 4, alpha = 0.5) +
+  geom_point(data = shorts, aes(x = date, y = total_asset),
+             shape = 25, color = "#720017", fill = "#720017", size = 6, alpha = 0.5) +
+  geom_ribbon(data = highlight_range, aes(ymin = lower, ymax = upper),
+              fill = "#547980", alpha = 0.2) +
+  geom_vline(xintercept = as.Date("2017-11-15"), linetype = "dotted", color = "#ff847c") +
+  annotate("text", x = as.Date("2017-12-20"),
+           y = highlight_range$total_asset[highlight_range$date == as.Date("2017-12-20")] + asset_sd,
+           label = "What if we use MACD here?", hjust = 0, size = 3.5) +
+  labs(title = "Portfolio Performance",
+       x = "Date", y = "Asset Value") +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "gray90"),
+        axis.title = element_text(face = "bold"),
+        legend.position = "none")
 
 
 
