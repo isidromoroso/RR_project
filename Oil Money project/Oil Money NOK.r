@@ -145,6 +145,73 @@ df$sk_fit <- df$usd * coefs[1] +
 
 df$sk_residual <- df$nok - df$sk_fit
 
+# Signals generation logic
+# Set thresholds based on 1 sigma of residuals before the cutoff date
+residual_std <- sd(df$sk_residual[df$date < as.Date('2017-04-25')])
+upper <- residual_std
+lower <- -residual_std
+
+# Create the signals dataframe starting from April 25, 2017
+signals <- df %>%
+  filter(date >= as.Date('2017-04-25')) %>%
+  select(date, nok, usd, eur, gbp, brent, sk_fit, sk_residual)
+
+# Rename 'sk_fit' column to 'fitted'
+signals <- signals %>%
+  rename(fitted = sk_fit)
+
+# Add band levels and initialize signal columns
+signals <- signals %>%
+  mutate(
+    stop_profit = fitted + 2 * upper,
+    stop_loss = fitted + 2 * lower,
+    upper = fitted + upper,
+    lower = fitted + lower,
+    signals = 0
+  )
+
+# Ensure signals dataframe has signal and cumulative signal columns
+signals$signals <- 0
+signals$cumsum <- 0  # to track cumulative signal exposure
+
+# Loop row by row
+for (j in 1:nrow(signals)) {
+  
+  # Entry rules
+  if (signals$nok[j] > signals$upper[j]) {
+    signals$signals[j] <- -1  # Short signal
+  }
+  
+  if (signals$nok[j] < signals$lower[j]) {
+    signals$signals[j] <- 1   # Long signal
+  }
+  
+  # Recalculate cumulative signal count
+  signals$cumsum <- cumsum(signals$signals)
+  
+  # Neutralize if cumulative exposure exceeds ±1
+  if (signals$cumsum[j] > 1 || signals$cumsum[j] < -1) {
+    signals$signals[j] <- 0
+    #signals$cumsum <- cumsum(signals$signals)
+  }
+  
+  # STOP PROFIT: if profit limit is reached
+  if (signals$nok[j] > signals$stop_profit[j]) {
+    signals$cumsum <- cumsum(signals$signals)
+    signals$signals[j] <- -signals$cumsum[j] + 1
+    signals$cumsum <- cumsum(signals$signals)
+    break  # stop algorithm
+  }
+  
+  # STOP LOSS: if loss limit is reached
+  if (signals$nok[j] < signals$stop_loss[j]) {
+    signals$cumsum <- cumsum(signals$signals)
+    signals$signals[j] <- -signals$cumsum[j] - 1
+    signals$cumsum <- cumsum(signals$signals)
+    break  # stop algorithm
+  }
+}
+
 
 
 
