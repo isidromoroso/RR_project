@@ -57,8 +57,8 @@ df.drop(columns=['date_dt'], inplace=True, errors='ignore')
 # Reorder columns
 df = df[['date', 'nok', 'usd', 'eur', 'gbp', 'brent', 'gdp yoy', 'interest rate']]
 
-# Forward fill only financial series (not GDP or interest rate)
-df[['nok', 'usd', 'eur', 'gbp', 'brent']] = df[['nok', 'usd', 'eur', 'gbp', 'brent']].ffill()
+# Forward fill every column except gdp yoy that we keep quarterly
+df[['nok', 'usd', 'eur', 'gbp', 'brent', 'interest rate']] = df[['nok', 'usd', 'eur', 'gbp', 'brent', 'interest rate']].ffill()
 
 # Save to CSV
 df.to_csv("brent crude nokjpy new data.csv", index=False)
