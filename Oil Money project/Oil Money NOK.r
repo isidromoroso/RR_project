@@ -212,6 +212,46 @@ for (j in 1:nrow(signals)) {
   }
 }
 
+# Ensure the 'date' column is of class Date
+signals$date <- as.Date(signals$date)
+
+# Create dataframes for LONG, SHORT, and Exit Point signals
+long_signals <- signals %>%
+  filter(signals > 0)
+
+short_signals <- signals %>%
+  filter(signals < 0)
+
+exit_point <- signals %>%
+  filter(date == as.Date("2017-12-20"))
+
+# NOK signals positions plot
+ggplot(signals, aes(x = date, y = nok)) +
+  geom_line(color = "#594f4f", alpha = 0.5) +
+  geom_point(data = long_signals, aes(x = date, y = nok),
+             color = "#83af9b", shape = 24, fill = "#83af9b", size = 4) +
+  geom_point(data = short_signals, aes(x = date, y = nok),
+             color = "#fe4365", shape = 25, fill = "#fe4365", size = 4) +
+  geom_point(data = exit_point, aes(x = date, y = nok),
+             color = "#f9d423", shape = 8, size = 5, alpha = 0.8) +
+  geom_vline(xintercept = as.Date("2017-11-15"), linetype = "dotted", color = "black") +
+  labs(title = "NOKJPY Positions",
+       x = "Date",
+       y = "NOKJPY") +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "gray90"),
+        axis.title = element_text(face = "bold"),
+        legend.position = "none")
+
+# Fitted vs Actual plot
+ggplot(signals, aes(x = date)) +
+  geom_line(aes(y = fitted), color = "white", size = 1.2, alpha = 0.6) +
+  geom_line(aes(y = nok), color = "black", size = 1.1, alpha = 0.8) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#2a3457", alpha = 0.2) +
+  geom_ribbon(aes(ymin = stop_loss, ymax = stop_profit), fill = "#720017", alpha = 0.1) +
+  labs(title = "Fitted vs Actual", x = "Date", y = "NOKJPY") +
+  theme_minimal()
 
 
 
