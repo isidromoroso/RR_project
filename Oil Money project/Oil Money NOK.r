@@ -378,5 +378,42 @@ ggplot(portfolio, aes(x = date, y = total_asset)) +
         axis.title = element_text(face = "bold"),
         legend.position = "none")
 
+# Oil_money_trading_backtest improved trading strategy optimised with gridsearch
+# Import and run backtest module
+source("oil_money_trading_backtest.r")
+portfolio_data <- df %>% filter(date >= as.Date("2014-01-01"), date <= as.Date("2015-08-20"))
+signals_bt   <- signal_generation(portfolio_data, "brent", "nok", oil_money)
+portfolio_bt <- portfolio(signals_bt, "nok")
+portfolio_bt$date <- portfolio_data$date
+plot_signals(signals_bt, "nok")
+graph_profit(portfolio_bt, "nok")
+
+# Grid search for parameters
+results <- expand.grid(h = 5:19, s = seq(0.3, 1.1, 0.05)) %>%
+  mutate(return = map2_dbl(h, s, ~{
+    sig <- signal_generation(portfolio_data, "brent", "nok", oil_money, holding_threshold = .x, stop = .y)
+    port <- portfolio(sig, "nok")
+    tail(port$asset, 1) / head(port$asset, 1) - 1
+  }))
+
+# Trading returns distribution histogram (on NOK)
+ggplot(results, aes(x = return * 100)) +
+  geom_histogram(binwidth = 0.5, fill = "#f09e8c", color = "white") +
+  labs(title = "Distribution of Return on NOK Trading", x = "Return (%)", y = "Frequency") +
+  theme_minimal()
+
+# Heatmap of returns changing Stop Profit/Loss and Holding Period
+return_grid <- results %>%
+  pivot_wider(names_from = s, values_from = return) %>%
+  column_to_rownames("h") %>%
+  as.matrix()
+
+heatmap(return_grid[rev(rownames(return_grid)), ] * 100,
+        Colv = NA, Rowv = NA,
+        col = colorRampPalette(c("#FFFFFF", "#ff8000", "#e63900", "#b30000", "#600000", "#000000"))(100),
+        scale = "none", margins = c(5,5),
+        xlab = "Stop Profit/Loss", ylab = "Holding Period",
+        main = "Heatmap of Returns (%)")
+
 
 
