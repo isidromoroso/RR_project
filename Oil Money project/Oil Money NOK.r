@@ -298,6 +298,25 @@ ggplot(df_norm, aes(x = date, y = value, color = currency)) +
     legend.position = "right"  # Puedes cambiar a "bottom", "left", etc.
   )
 
+# Cointegration analysis
+# Define the cutoff date
+cutoff_date <- as.Date("2017-04-25")
+
+# x2 is the predictor (eur), y is the dependent variable (nok)
+x2 <- df$eur[df$date < cutoff_date]
+y  <- df$nok[df$date < cutoff_date]
+
+# OLS regression with intercept
+ols_model <- lm(y ~ x2)
+residuals <- resid(ols_model)
+
+# ADF test on the residuals
+adf_test <- ur.df(residuals, type = "none", selectlags = "AIC")
+summary(adf_test)
+
+# Show summary of the OLS regression
+summary(ols_model)
+
 
 
 
