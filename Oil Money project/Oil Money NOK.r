@@ -82,3 +82,9 @@ dual_base_plot(
   title = "NOK vs GDP"
 )
 
+# Linear regression (OLS)
+x0 <- df %>% select(usd, gbp, eur, brent)
+y  <- df$nok
+train_idx <- df$date < as.Date("2017-04-25")
+ols_model <- lm(y[train_idx] ~ ., data = x0[train_idx, ])
+print(summary(ols_model))
