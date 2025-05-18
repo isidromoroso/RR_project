@@ -88,3 +88,63 @@ y  <- df$nok
 train_idx <- df$date < as.Date("2017-04-25")
 ols_model <- lm(y[train_idx] ~ ., data = x0[train_idx, ])
 print(summary(ols_model))
+
+#Elastic Net regression (glmnet)
+# Define the cutoff date
+cutoff_date <- as.Date("2017-04-25")
+
+# Filter data before the cutoff date
+x0_filtered <- as.matrix(df[df$date < cutoff_date, c("usd", "gbp", "eur", "brent")])
+y_filtered <- df$nok[df$date < cutoff_date]
+
+# Parameters to evaluate
+l1_ratio <- 0.01  # alpha in glmnet (Python l1_ratio)
+lambdas <- c(9.9999, 10, 10.0000001)  # lambda in glmnet, I set closest to the 10 because is the best value in Python (Python alpha) 
+
+# Search for the best model
+best_model <- NULL
+best_mse <- Inf
+best_alpha <- NA
+best_lambda <- NA
+
+set.seed(123)  # For reproducibility
+fit <- cv.glmnet(
+  x = x0_filtered,
+  y = y_filtered,
+  alpha = l1_ratio,
+  lambda = lambdas,
+  standardize = FALSE,  # <-- Avoid standardization (Python Elastic Net doesn't apply standardization)
+  intercept = TRUE,
+  nfolds = 5,
+  maxit = 5000
+)
+
+if (min(fit$cvm) < best_mse) {
+  best_mse <- min(fit$cvm)
+  best_model <- fit
+  best_alpha <- l1_ratio
+  best_lambda <- fit$lambda.min
+}
+
+# Extract coefficients
+coef_best <- coef(best_model, s = "lambda.min")
+intercept <- coef_best[1]
+coefs <- as.vector(coef_best[-1])
+
+cat("Best alpha (l1_ratio):", best_alpha, "\n")
+cat("Best lambda:", best_lambda, "\n")
+cat("Intercept:", intercept, "\n")
+cat("Coefficients:", round(coefs, 5), "\n")
+
+# Compute fitted values and residuals for the full dataframe
+df$sk_fit <- df$usd * coefs[1] +
+  df$gbp * coefs[2] +
+  df$eur * coefs[3] +
+  df$brent * coefs[4] +
+  intercept
+
+df$sk_residual <- df$nok - df$sk_fit
+
+
+
+
