@@ -1,5 +1,11 @@
 # coding: utf-8
 
+# making graphs downloadable
+import matplotlib
+matplotlib.use('Agg')      # switch to a non-interactive backend
+import matplotlib.pyplot as plt
+plt.ioff()                 # turn off interactive mode
+
 # In[1]:
 # Importing libraries
 
@@ -392,4 +398,19 @@ plt.style.use('default')
 # We can observe clearly how this strategy has been optimised for other period
 # The market condtions have changed a lot during this 10 years (2013 to 2023)
 
+#In[20]
+#downloading all outputted figures in the file
+import os
+
+base_dir   = 'NOK Data/'
+out_folder = os.path.join(base_dir, 'py_graphs_new_data')
+os.makedirs(out_folder, exist_ok=True)
+
+for idx, num in enumerate(plt.get_fignums(), start=1):
+    fig = plt.figure(num)
+    fig.savefig(
+        os.path.join(out_folder, f'figure_{idx}.png'),
+        dpi=300, bbox_inches='tight'
+    )
+plt.close('all')
 # %%
