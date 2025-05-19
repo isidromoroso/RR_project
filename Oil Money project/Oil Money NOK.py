@@ -1,6 +1,12 @@
 
 # coding: utf-8
 
+# making graphs downloadable
+import matplotlib
+matplotlib.use('Agg')      # switch to a non-interactive backend
+import matplotlib.pyplot as plt
+plt.ioff()                 # turn off interactive mode
+
 # In[1]:
 
 
@@ -462,7 +468,7 @@ plt.show()
 # https://github.com/je-suis-tm/quant-trading/blob/master/Oil%20Money%20project/Oil%20Money%20Trading%20backtest.py
 import oil_money_trading_backtest as om
 
-dataset = df.loc['2014-10-23':'2015-08-20']
+dataset = df # We use this code for the short period: .loc['2014-10-23':'2015-08-20'], period [387:600] in the backtest
 dataset.reset_index(inplace=True)
 
 #generate signals,monitor portfolio performance
@@ -549,5 +555,19 @@ plt.style.use('default')
 #it is correlated with the length of holding period
 #the ideal one should be 9 trading days
 #as for stop loss/profit point could range from 0.6 to 1.05
+#In[20]
+# Download all outputted figures in the file
+import os
 
+base_dir   = 'NOK Data/'
+out_folder = os.path.join(base_dir, 'py_graphs')
+os.makedirs(out_folder, exist_ok=True)
+
+for idx, num in enumerate(plt.get_fignums(), start=1):
+    fig = plt.figure(num)
+    fig.savefig(
+        os.path.join(out_folder, f'figure_{idx}.png'),
+        dpi=300, bbox_inches='tight'
+    )
+plt.close('all')
 # %%
