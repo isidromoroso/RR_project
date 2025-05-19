@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # making graphs downloadable
@@ -18,33 +17,30 @@ import seaborn as sns
 from sklearn.linear_model import ElasticNetCV as en 
 from statsmodels.tsa.stattools import adfuller as adf
 
-
-
 # In[2]:
 # Load and preprocess the dataset
 
-df=pd.read_csv('data/brent crude nokjpy.csv')
+df=pd.read_csv('NOK data/brent crude nokjpy new data.csv')
 df.set_index(pd.to_datetime(df[list(df.columns)[0]]),inplace=True)
 del df[list(df.columns)[0]]
-
-
+#df = df[df.index >= '2020-01-01']
 # In[3]:
-# Data visualitation and analysis
-# Data from 2013-4-25 to 2017-4-25 as estimation horizon/training set
-# Data from 2017-4-25 to 2018-4-25 as validation horizon/testing set
+# As in the original project we define a testing period of one year
+# Training period 2019-2022, Testing period 2023
 
 # Scatter plot of NOKJPY vs Brent before 2023 (correlation plot)
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.scatter(df['brent'][df.index<'2017-04-25'],df['nok'][df.index<'2017-04-25'],s=1,c='#5f0f4e')
+ax.scatter(df['brent'][df.index<'2023-01-01'],df['nok'][df.index<'2023-01-01'],s=1,c='#5f0f4e')
 
 plt.title('NOK Brent Correlation')
 plt.xlabel('Brent in JPY')
 plt.ylabel('NOKJPY')
 plt.show()
 
-# Dual-axis-plot function (we will use it to plot several graphs)
+
+# Dual-axis time series plot function
 def dual_axis_plot(xaxis,data1,data2,fst_color='r',
                     sec_color='b',fig_size=(10,5),
                    x_label='',y_label1='',y_label2='',
@@ -74,7 +70,7 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
     plt.title(title)
     plt.show()
     
-# NOK vs Interest Rate plot
+# NOK vs Interest Rate
 dual_axis_plot(df.index,df['nok'],df['interest rate'],
                fst_color='#34262b',sec_color='#cb2800',
                fig_size=(10,5),x_label='Date',
@@ -82,7 +78,7 @@ dual_axis_plot(df.index,df['nok'],df['interest rate'],
                legend1='NOKJPY',legend2='Interest Rate',
                grid=False,title='NOK vs Interest Rate')
 
-# NOK vs Brent in JPY plot
+# NOK vs Brent Crude
 dual_axis_plot(df.index,df['nok'],df['brent'],
                fst_color='#4f2d20',sec_color='#3feee6',
                fig_size=(10,5),x_label='Date',
@@ -90,8 +86,7 @@ dual_axis_plot(df.index,df['nok'],df['brent'],
                legend1='NOKJPY',legend2='Brent',
                grid=False,title='NOK vs Brent')
                
-# NOK vs GDP yoy growth plot
-# We need to convert NOK into quarterly data because the gdp is released quarterly
+# NOK vs Norway GDP YoY
 ind=df['gdp yoy'].dropna().index
 dual_axis_plot(df.loc[ind].index,
                df['nok'].loc[ind],
@@ -103,48 +98,46 @@ dual_axis_plot(df.loc[ind].index,
                grid=False,title='NOK vs GDP')
 
 
-# Linear Regression (OLS)
+# Linear Regression with Statsmodels
 x0=pd.concat([df['usd'],df['gbp'],df['eur'],df['brent']],axis=1)
 x1=sm.add_constant(x0)
-x=x1[x1.index<'2017-04-25']
-y=df['nok'][df.index<'2017-04-25']
+x=x1[x1.index<'2023-01-01'] # Set training period
+y=df['nok'][df.index<'2023-01-01'] # Set training period
 
 model=sm.OLS(y,x).fit()
 print(model.summary(),'\n')
 
-
 # In[4]:
-# Elastic Net regression (ElasticNetCV function)
-# Multicollinearity is observed in OLS so we use Elastic Net regression
 
 m=en(alphas=[0.0001, 0.0005, 0.001, 0.01, 0.1, 1, 10],
-     l1_ratio=[.01, .1, .5, .9, .99],  max_iter=5000).fit(x0[x0.index<'2017-04-25'], y)  
+     l1_ratio=[.01, .1, .5, .9, .99],  max_iter=5000).fit(x0[x0.index<'2023-01-01'], y) # Set training period
 print(m.intercept_,m.coef_)
 
-print("Best l1_ratio:", m.l1_ratio_) # Print Best l1_ratio and best alpha to reproduce same parameter in R
+print("Best l1_ratio:", m.l1_ratio_) # Print Best l1_ratio and best alpha to reproduce same parameter
+
 print("Best alpha:", m.alpha_)
 
-# Elastic net estimation results:
-# 3.79776228406 [ 0.00388958  0.01992038  0.02823187  0.00050092]
-
+#elastic net estimation results:
+#-0.6331502954082708 [-2.55348337e-02  6.19119612e-02  4.81906456e-02  7.67700858e-05]
+#Best l1_ratio: 0.01
+#Best alpha: 0.1
 
 # In[5]:
-# Calculate the fitted values of NOK
+# Estimate Fitted NOK 
 df['sk_fit']=(df['usd']*m.coef_[0]+df['gbp']*m.coef_[1]+
                  df['eur']*m.coef_[2]+df['brent']*m.coef_[3]+m.intercept_)
-
-
 # In[6]:
-# Calculate the residuals of NOK
+# Calculate Residuals
 df['sk_residual']=df['nok']-df['sk_fit']
 
 # In[7]:
-# Define trading signals based on residual standard deviation bands (based on Elastic Net results)
-upper=np.std(df['sk_residual'][df.index<'2017-04-25'])
+# Define trading signals based on residual standard deviation bands
+
+upper=np.std(df['sk_residual'][df.index<'2023-01-01']) 
 lower=-upper
 
 signals=pd.concat([df[i] for i in ['nok', 'usd', 'eur', 'gbp', 'brent', 'sk_fit','sk_residual']], \
-                  axis=1)[df.index>='2017-04-25']
+                  axis=1)[df.index>='2019-01-01']
 signals['fitted']=signals['sk_fit']
 del signals['sk_fit']
 
@@ -153,12 +146,8 @@ signals['lower']=signals['fitted']+lower
 signals['stop profit']=signals['fitted']+2*upper
 signals['stop loss']=signals['fitted']+2*lower
 signals['signals']=0
-
-
 # In[8]:
-
-
-# Signal generation logic: 2 sigmas strategy with long/short/exit with Stop Loss and Stop Profit
+# Signal generation logic: long/short/exit with Stop Loss and Stop Profit
 
 index=list(signals.columns).index('signals')
 
@@ -168,26 +157,27 @@ for j in range(len(signals)):
         signals.iloc[j,index]=-1  
           
     if signals['nok'].iloc[j]<signals['lower'].iloc[j]:
-        signals.iloc[j,index]=1 
+        signals.iloc[j,index]=1
        
     signals['cumsum']=signals['signals'].cumsum()
 
     if signals['cumsum'].iloc[j]>1 or signals['cumsum'].iloc[j]<-1:
         signals.iloc[j,index]=0
+        signals['cumsum'] = signals['signals'].cumsum()
   
     if signals['nok'].iloc[j]>signals['stop profit'].iloc[j]:         
         signals['cumsum']=signals['signals'].cumsum()
         signals.iloc[j,index]=-signals['cumsum'].iloc[j]+1
         signals['cumsum']=signals['signals'].cumsum()
-        break
+        
 
     if signals['nok'].iloc[j]<signals['stop loss'].iloc[j]:
         signals['cumsum']=signals['signals'].cumsum()
         signals.iloc[j,index]=-signals['cumsum'].iloc[j]-1
         signals['cumsum']=signals['signals'].cumsum()
-        break
+        
 
-
+signals.head(500)
 # In[9]:
 # Plot trading signals on NOK chart
 from datetime import datetime
@@ -197,18 +187,18 @@ ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 
 signals['nok'].plot(label='NOKJPY',c='#594f4f',alpha=0.5)
-ax.plot(signals.loc[signals['signals']>0].index,
-         signals['nok'][signals['signals']>0],
-         lw=0,marker='^',c='#83af9b',label='LONG', markersize=10)
-ax.plot(signals.loc[signals['signals']<0].index,
-         signals['nok'][signals['signals']<0],
-         lw=0,marker='v',c='#fe4365',label='SHORT', markersize=10)
-ax.plot(pd.to_datetime('2017-12-20'),
-         signals['nok'].loc['2017-12-20'],
+ax.scatter(signals.index[signals['signals']>0],
+           signals['nok'][signals['signals']>0],
+           marker='^', s=100, c='#83af9b', label='LONG')
+ax.scatter(signals.index[signals['signals']<0],
+           signals['nok'][signals['signals']<0],
+           marker='v', s=100, c='#fe4365', label='SHORT')
+ax.plot(pd.to_datetime('2023-12-20'),
+         signals['nok'].loc['2023-12-20'],
          lw=0,marker='*',c='#f9d423', markersize=15, alpha=0.8,
          label='Potential Exit Point of Momentum Trading')
 
-plt.axvline(datetime.strptime('2017/11/15', '%Y/%m/%d'), linestyle=':', c='k', label='Exit')
+plt.axvline(datetime.strptime('2022/07/01', '%Y/%m/%d'), linestyle=':', c='k', label='Exit')
 plt.legend()
 plt.title('NOKJPY Positions')
 plt.ylabel('NOKJPY')
@@ -218,7 +208,6 @@ plt.show()
 
 # In[10]:
 # Plot actual vs fitted with confidence bands
-# After 2017/11/15, nokjpy price went skyrocketing
 
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
@@ -240,8 +229,6 @@ plt.show()
 
 # In[11]:
 
-# Brent crude drives NOK/JPY's short-term moves,
-# while long-term shifts may stem from geopolitical events and U.S. policy changes.
 
 # In[12]:
 # Plot normalized price trends (for visual comparison)
@@ -266,20 +253,18 @@ plt.show()
 # In[13]:
 # Stationarity test on residuals using ADF (Augmented Dickey-Fuller)
 
-x2=df['eur'][df.index<'2017-04-25']
+x2=df['eur'][df.index<'2023-01-01']
 x3=sm.add_constant(x2)
 
 model=sm.OLS(y,x3).fit()
 ero=model.resid
 
-print(adf(ero))
+print(adf(ero)) # Test for stationarity
 print(model.summary())
 
-# We cant conclude any cointegration
-
-
 # In[14]:
-# Simulate trading strategy: backtest PnL (Initial capital 2000, each postiion of 10)
+# Simulate trading strategy: backtest PnL
+
 capital0=2000
 positions=100
 portfolio=pd.DataFrame(index=signals.index)
@@ -290,32 +275,29 @@ portfolio['signals']=signals['signals']
 
 
 # In[15]:
-# Portfolio date range
+# Trim portfolio for date range
 
-portfolio=portfolio[portfolio.index>'2017-10-01']
-portfolio=portfolio[portfolio.index<'2018-01-01']
+start_date = '2018-12-31'
+end_date = '2023-12-31'
+
+portfolio=portfolio[portfolio.index>start_date]
+portfolio=portfolio[portfolio.index<end_date]
 
 
 # In[16]:
 # Plot portfolio performance and signal points
+
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 
 portfolio['total asset'].plot(c='#594f4f',alpha=0.5,label='Total Asset')
-ax.plot(portfolio.loc[portfolio['signals']>0].index,portfolio['total asset'][portfolio['signals']>0],
-         lw=0,marker='^',c='#2a3457',label='LONG',markersize=10,alpha=0.5)
-ax.plot(portfolio.loc[portfolio['signals']<0].index,portfolio['total asset'][portfolio['signals']<0],
-         lw=0,marker='v',c='#720017',label='The Big Short',markersize=15,alpha=0.5)
-ax.fill_between(portfolio['2017-11-20':'2017-12-20'].index,
-                 (portfolio['total asset']+np.std(portfolio['total asset']))['2017-11-20':'2017-12-20'],
-                 (portfolio['total asset']-np.std(portfolio['total asset']))['2017-11-20':'2017-12-20'],
-                 alpha=0.2, color='#547980')
-
-plt.text(pd.to_datetime('2017-12-20'),
-          (portfolio['total asset']+np.std(portfolio['total asset'])).loc['2017-12-20'],
-          'What if we use MACD here?')
-plt.axvline(datetime.strptime('2017/11/15', '%Y/%m/%d'),linestyle=':',label='Exit',c='#ff847c')
+ax.scatter(portfolio.loc[portfolio['signals']>0].index,
+           portfolio['total asset'][portfolio['signals']>0],
+           marker='^', c='#2a3457', label='LONG', s=100, alpha=0.5)  
+ax.scatter(portfolio.loc[portfolio['signals']<0].index,
+           portfolio['total asset'][portfolio['signals']<0],
+           marker='v', c='#720017', label='The Big Short', s=150, alpha=0.5)
 plt.legend()
 plt.title('Portfolio Performance')
 plt.ylabel('Asset Value')
@@ -323,27 +305,34 @@ plt.xlabel('Date')
 plt.show()
 
 
-# Though the model predicts well, profits arise mainly from momentum beyond stop thresholds, 
-# suggesting it's more a trend-following strategy than statistical arbitrage.
+# Calculate return % of the strategy
+initial_value = portfolio['total asset'].iloc[0]
+final_value = portfolio['total asset'].iloc[-1]
+portfolio_return_pct = ((final_value - initial_value) / initial_value) * 100
 
+# Print return
+print(f"Portfolio return from {start_date} to {end_date}: {portfolio_return_pct:.2f}%")
 
-# In[17]:
+# This strategy works much better for the new data
+# The main reason is the better forecast of NOK
+# Bullish trend after COVID crash can be another reason
+# If we consider just the results after the crash the results are even better
+# One possible improve could be avoid trading during high volatility periods
+
+#In[17]:
 # Oil_money_trading_backtest improved trading strategy optimised
 # Import trading backtest strategy
-import oil_money_trading_backtest as om
 
-dataset = df # We use this code for the short period: .loc['2014-10-23':'2015-08-20'], period [387:600] in the backtest
+import oil_money_trading_backtest_new_data_2019_to_2023 as om
+
+dataset = df # I use df because I want to check the results for the whole period
 dataset.reset_index(inplace=True)
 
-# Generate signals,monitor portfolio performance
-# Plot positions and total asset
 signals=om.signal_generation(dataset,'brent','nok',om.oil_money)
 p=om.portfolio(signals,'nok')
 om.plot(signals,'nok')
 om.profit(p,'nok')
 
-# Positive return but very low, just about 2%
-# Strategy optimizer, holding period and Stop Loss/Profit
 dic={}
 for holdingt in range(5,20):
     for stopp in np.arange(0.3,1.1,0.05):
@@ -358,10 +347,7 @@ profile=pd.DataFrame({'params':list(dic.keys()),'return':list(dic.values())})
 
 
 # In[18]:
-
-# Distribution of return plot
-# Average return is 2%
-# -6% and 6% as extreme values
+# Plot histogram with the distribution of the return
 
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
@@ -375,10 +361,13 @@ plt.ylabel('Frequency')
 plt.xlabel('Return (%)')
 plt.show()
 
+# With this new data the imported trading strategy doesn't work well
+# giving a distribution of return between -16% and 6%
+
 
 # In[19]:
+# Plot heatmap of return under different parameters
 
-# Heatmap of holding period and Stop Loss/Profit return
 matrix=pd.DataFrame(columns= \
                     [round(i,2) for i in np.arange(0.3,1.1,0.05)])
 
@@ -404,15 +393,17 @@ plt.ylabel('Position Holding Period (days)\n')
 plt.title('Profit Heatmap\n',fontsize=10)
 plt.style.use('default')
 
-# Stop profit/loss point doesn't really affect (Best: from 0.6 to 1.05)
-# More correlated with the length of holding period (Best: 9 trading days)
+# Once again terrible returns under almost every condition
+# Only positive results with a small Stop Loss/Profit and holding period of 14-16 days
+# We can observe clearly how this strategy has been optimised for other period
+# The market condtions have changed a lot during this 10 years (2013 to 2023)
 
 #In[20]
-# Download all outputted figures in the file
+#downloading all outputted figures in the file
 import os
 
 base_dir   = 'NOK Data/'
-out_folder = os.path.join(base_dir, 'py_graphs')
+out_folder = os.path.join(base_dir, 'py_graphs_new_data')
 os.makedirs(out_folder, exist_ok=True)
 
 for idx, num in enumerate(plt.get_fignums(), start=1):

@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 
 # Define date range
-start_date = "2019-01-01"
+start_date = "2018-12-31"
 end_date = "2023-12-31"
 
 # Define tickers for exchange rates and Brent
@@ -47,9 +47,17 @@ df.rename(columns={'date_x': 'date'}, inplace=True)
 gdp = pd.read_csv("norway_gdp_yoy_cleaned.csv")
 gdp['date'] = pd.to_datetime(gdp['date'])
 
-# Merge GDP YoY without forward fill
-df = df.merge(gdp, how='left', left_on='date_dt', right_on='date', suffixes=('', '_gdp'))
-df.drop(columns=['date_gdp'], inplace=True, errors='ignore')
+# initialize blank gdp yoy column
+df['gdp yoy'] = pd.NA
+
+# for each quarterly observation, assign it to the single closest date in df
+for obs_date, yoy in zip(gdp['date'], gdp['gdp yoy']):
+    # find index of the row in df whose date_dt is closest to obs_date
+    closest_idx = (df['date_dt'] - obs_date).abs().idxmin()
+    df.at[closest_idx, 'gdp yoy'] = yoy
+
+# Format date again as MM/DD/YYYY before dropping date_dt
+df['date'] = df['date_dt'].dt.strftime('%m/%d/%Y')
 
 # Final cleanup
 df.drop(columns=['date_dt'], inplace=True, errors='ignore')
@@ -59,6 +67,9 @@ df = df[['date', 'nok', 'usd', 'eur', 'gbp', 'brent', 'gdp yoy', 'interest rate'
 
 # Forward fill every column except gdp yoy that we keep quarterly
 df[['nok', 'usd', 'eur', 'gbp', 'brent', 'interest rate']] = df[['nok', 'usd', 'eur', 'gbp', 'brent', 'interest rate']].ffill()
+
+# Remove the first row of the DataFrame and reset the index
+df = df.iloc[1:].reset_index(drop=True)
 
 # Save to CSV
 df.to_csv("brent crude nokjpy new data.csv", index=False)
