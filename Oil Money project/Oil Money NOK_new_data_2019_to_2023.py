@@ -279,9 +279,6 @@ portfolio=portfolio[portfolio.index<end_date]
 
 
 # In[16]:
-
-
-# In[16]:
 # Plot portfolio performance and signal points
 
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
@@ -309,5 +306,90 @@ portfolio_return_pct = ((final_value - initial_value) / initial_value) * 100
 
 # Print return
 print(f"Portfolio return from {start_date} to {end_date}: {portfolio_return_pct:.2f}%")
+
+# This strategy works much better for the new data
+# The main reason is the better forecast of NOK
+# Bullish trend after COVID crash can be another reason
+# If we consider just the results after the crash the results are even better
+# One possible improve could be avoid trading during high volatility periods
+
+#In[17]:
+# Oil_money_trading_backtest improved trading strategy optimised
+# Import trading backtest strategy
+
+import oil_money_trading_backtest_new_data_2019_to_2023 as om
+
+dataset = df # I use df because I want to check the results for the whole period
+dataset.reset_index(inplace=True)
+
+signals=om.signal_generation(dataset,'brent','nok',om.oil_money)
+p=om.portfolio(signals,'nok')
+om.plot(signals,'nok')
+om.profit(p,'nok')
+
+dic={}
+for holdingt in range(5,20):
+    for stopp in np.arange(0.3,1.1,0.05):
+        signals=om.signal_generation(dataset,'brent','nok',om.oil_money,
+                                     holding_threshold=holdingt,
+                                    stop=stopp)
+        
+        p=om.portfolio(signals,'nok')
+        dic[holdingt,stopp]=p['asset'].iloc[-1]/p['asset'].iloc[0]-1
+     
+profile=pd.DataFrame({'params':list(dic.keys()),'return':list(dic.values())})
+
+
+# In[18]:
+# Plot histogram with the distribution of the return
+
+ax=plt.figure(figsize=(10,5)).add_subplot(111)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+profile['return'].apply(lambda x:x*100).hist(histtype='bar', \
+                                            color='#f09e8c', \
+                                            width=0.45,bins=20)
+plt.title('Distribution of Return on NOK Trading')
+plt.grid(False)
+plt.ylabel('Frequency')
+plt.xlabel('Return (%)')
+plt.show()
+
+# With this new data the imported trading strategy doesn't work well
+# giving a distribution of return between -16% and 6%
+
+
+# In[19]:
+# Plot heatmap of return under different parameters
+
+matrix=pd.DataFrame(columns= \
+                    [round(i,2) for i in np.arange(0.3,1.1,0.05)])
+
+matrix['index']=np.arange(5,20)
+matrix.set_index('index',inplace=True)
+
+for i,j in profile['params']:
+    matrix.at[i,round(j,2)]= \
+    profile['return'][profile['params']==(i,j)].item()*100
+
+for i in matrix.columns:
+    matrix[i]=matrix[i].apply(float)
+
+
+fig=plt.figure(figsize=(10,5))
+ax=fig.add_subplot(111)
+sns.heatmap(matrix,cmap='gist_heat_r',square=True, \
+            xticklabels=3,yticklabels=3)
+ax.collections[0].colorbar.set_label('Return(%) \n', \
+                                     rotation=270)
+plt.xlabel('\nStop Loss/Profit (points)')
+plt.ylabel('Position Holding Period (days)\n')
+plt.title('Profit Heatmap\n',fontsize=10)
+plt.style.use('default')
+
+# Once again terrible returns under almost every condition
+# Only positive results with a small Stop Loss/Profit and holding period of 14-16 days
+# We can observe clearly how this strategy has been optimised for other period
+# The market condtions have changed a lot during this 10 years (2013 to 2023)
 
 # %%

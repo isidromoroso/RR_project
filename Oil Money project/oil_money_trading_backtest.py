@@ -129,7 +129,7 @@ def signal_generation(dataset,x,y,method, \
                     #this would fill in the blank once our model turns invalid
                     #when we have a new valid model
                     #the new forecast and confidence intervals would cover the former one
-                    df.loc[i:,'forecast']= \
+                    df.iloc[i:, df.columns.get_loc('forecast')] = \
                     m.predict(sm.add_constant(df[x].iloc[i:]))
                     
                     df.loc[i:,'pos2 sigma']= \
