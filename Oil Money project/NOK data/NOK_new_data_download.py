@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 
 # Define date range
-start_date = "2019-01-01"
+start_date = "2018-12-31"
 end_date = "2023-12-31"
 
 # Define tickers for exchange rates and Brent
@@ -67,6 +67,9 @@ df = df[['date', 'nok', 'usd', 'eur', 'gbp', 'brent', 'gdp yoy', 'interest rate'
 
 # Forward fill every column except gdp yoy that we keep quarterly
 df[['nok', 'usd', 'eur', 'gbp', 'brent', 'interest rate']] = df[['nok', 'usd', 'eur', 'gbp', 'brent', 'interest rate']].ffill()
+
+# Remove the first row of the DataFrame and reset the index
+df = df.iloc[1:].reset_index(drop=True)
 
 # Save to CSV
 df.to_csv("brent crude nokjpy new data.csv", index=False)
