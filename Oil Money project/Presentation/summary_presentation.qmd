@@ -1,7 +1,88 @@
 ---
-title: "summary_presentation"
-format: html
-editor: visual
+title: "Oil Money Project - RR - Jack ST, Isidro MV, Benedykt K"
+format: 
+  html:
+    self-contained: true
+execute:
+  echo: false
+  warning: false
+  message: false
 ---
 
-## Oil Money Project - Reproduced by Jack ST, Isidro MV, Benedykt K
+# CAD Python vs. R Conversion
+
+```{r, results='asis'}
+library(stringr)
+
+# Define the folders
+folder1 <- "../CAD data/original_graphs"
+folder2 <- "../CAD data/original_graphs_r"
+
+# List the PNGs (unsorted)
+files1 <- list.files(folder1, pattern="\\.png$", full.names=TRUE)
+files2 <- list.files(folder2, pattern="\\.png$", full.names=TRUE)
+
+# Extract the numeric part and order by it
+nums1 <- as.numeric(str_extract(basename(files1), "(?<=figure_)\\d+"))
+nums2 <- as.numeric(str_extract(basename(files2), "(?<=figure_)\\d+"))
+
+files1 <- files1[order(nums1)]
+files2 <- files2[order(nums2)]
+
+# Ensure same length
+n <- min(length(files1), length(files2))
+
+# Render side-by-side with max-height
+for (i in seq_len(n)) {
+  cat("### Figure", i, "\n\n")
+  cat('<div style="display: flex; gap: 10px;">\n')
+  cat(sprintf(
+    '<div><img src="%s" style="width:100%%; max-width:400px; max-height:300px; height:auto;"></div>\n',
+    files1[i]
+  ))
+  cat(sprintf(
+    '<div><img src="%s" style="width:100%%; max-width:400px; max-height:300px; height:auto;"></div>\n',
+    files2[i]
+  ))
+  cat('</div>\n\n')
+}
+```
+
+# CAD Python Old to 2018 vs Python New to 2023
+
+```{r, results='asis'}
+library(stringr)
+
+# Define the folders
+folder1 <- "../CAD data/original_graphs"
+folder2 <- "../CAD data/graphs"
+
+# List the PNGs (unsorted)
+files1 <- list.files(folder1, pattern="\\.png$", full.names=TRUE)
+files2 <- list.files(folder2, pattern="\\.png$", full.names=TRUE)
+
+# Extract the numeric part and order by it
+nums1 <- as.numeric(str_extract(basename(files1), "(?<=figure_)\\d+"))
+nums2 <- as.numeric(str_extract(basename(files2), "(?<=figure_)\\d+"))
+
+files1 <- files1[order(nums1)]
+files2 <- files2[order(nums2)]
+
+# Ensure same length
+n <- min(length(files1), length(files2))
+
+# Render side-by-side with max-height
+for (i in seq_len(n)) {
+  cat("### Figure", i, "\n\n")
+  cat('<div style="display: flex; gap: 10px;">\n')
+  cat(sprintf(
+    '<div><img src="%s" style="width:100%%; max-width:400px; max-height:300px; height:auto;"></div>\n',
+    files1[i]
+  ))
+  cat(sprintf(
+    '<div><img src="%s" style="width:100%%; max-width:400px; max-height:300px; height:auto;"></div>\n',
+    files2[i]
+  ))
+  cat('</div>\n\n')
+}
+```
