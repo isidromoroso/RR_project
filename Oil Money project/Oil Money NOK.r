@@ -391,7 +391,7 @@ graph_profit(portfolio_bt, "nok")
 # Grid search for parameters
 results <- expand.grid(h = 5:19, s = seq(0.3, 1.05, 0.05)) %>%
   mutate(return = map2_dbl(h, s, ~{
-    sig <- signal_generation(portfolio_data, "brent", "nok", oil_money, holding_threshold = .x, stop = .y)
+    sig <- signal_generation(df, "brent", "nok", oil_money, holding_threshold = .x, stop = .y)
     port <- portfolio(sig, "nok")
     tail(port$asset, 1) / head(port$asset, 1) - 1
   }))
