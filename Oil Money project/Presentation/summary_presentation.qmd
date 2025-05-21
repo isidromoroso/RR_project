@@ -15,7 +15,7 @@ execute:
 library(stringr)
 
 # Define the folders
-folder1 <- "../original_graphs"
+folder1 <- "../CAD data/original_graphs"
 folder2 <- "../CAD data/original_graphs_r"
 
 # List the PNGs (unsorted)
@@ -34,7 +34,7 @@ n <- min(length(files1), length(files2))
 
 # Render side-by-side with max-height
 for (i in seq_len(n)) {
-  cat("### Imagen", i, "\n\n")
+  cat("### Figure", i, "\n\n")
   cat('<div style="display: flex; gap: 10px;">\n')
   cat(sprintf(
     '<div><img src="%s" style="width:100%%; max-width:400px; max-height:300px; height:auto;"></div>\n',
@@ -54,7 +54,7 @@ for (i in seq_len(n)) {
 library(stringr)
 
 # Define the folders
-folder1 <- "../original_graphs"
+folder1 <- "../CAD data/original_graphs"
 folder2 <- "../CAD data/graphs"
 
 # List the PNGs (unsorted)
@@ -73,7 +73,7 @@ n <- min(length(files1), length(files2))
 
 # Render side-by-side with max-height
 for (i in seq_len(n)) {
-  cat("### Imagen", i, "\n\n")
+  cat("### Figure", i, "\n\n")
   cat('<div style="display: flex; gap: 10px;">\n')
   cat(sprintf(
     '<div><img src="%s" style="width:100%%; max-width:400px; max-height:300px; height:auto;"></div>\n',
