@@ -4,7 +4,7 @@
 
 - [Introduction](#introduction)
 - [Original “Oil Money” Study](#original-oil-money-study)
-- [What did in this Project](#what-did-in-this-project)
+- [What we did in this Project](#what-we-did-in-this-project)
 - [Repository Structure](#repository-structure)
 
 ## Introduction  
@@ -42,7 +42,7 @@ The **Oil Money** project explores whether currencies of oil-exporting countries
 
 ---
 
-## What did in this Project  
+## What we did in this Project  
 Building on the original work, our team of three will:
 
 1. **Reproduce the Original Python Analysis**  
