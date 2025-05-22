@@ -1,11 +1,11 @@
 # coding: utf-8
-
+'''
 # making graphs downloadable
 import matplotlib
 matplotlib.use('Agg')      # switch to a non-interactive backend
 import matplotlib.pyplot as plt
 plt.ioff()                 # turn off interactive mode
-
+'''
 
 # In[1]:
 
@@ -75,7 +75,7 @@ def get_line_params(x1,y1,x2,y2):
 
 # In[3]:
 
-df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_project/Repo/RR_project/Oil Money project/data') / 'wcs crude cadaud.csv',
+df = pd.read_csv(Path('data/wcs crude cadaud.csv'),
                  index_col='date', parse_dates=True, encoding='utf-8')
 
 # In[4]:
@@ -377,7 +377,7 @@ for i in range(2):
     plt.show()
 
 
-
+'''
 #downloading all outputted figures in the file
 import os
 
@@ -392,4 +392,4 @@ for idx, num in enumerate(plt.get_fignums(), start=1):
         dpi=300, bbox_inches='tight'
     )
 plt.close('all')
-
+'''
