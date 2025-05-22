@@ -1,9 +1,11 @@
 # coding: utf-8
+'''
 # making graphs downloadable
 import matplotlib
 matplotlib.use('Agg')      # switch to a non-interactive backend
 import matplotlib.pyplot as plt
 plt.ioff()                 # turn off interactive mode
+'''
 
 # In[1]:
 
@@ -73,7 +75,7 @@ def get_line_params(x1,y1,x2,y2):
 
 # In[3]:
 
-df = pd.read_csv(Path('/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data') / 'merged_with_edmonton_interpolated_updated.csv',
+df = pd.read_csv(Path('CAD data/merged_with_edmonton_interpolated_updated.csv'),
                  index_col='date', parse_dates=True, encoding='utf-8')
 
 # ─── STEP A ─── make sure iloc[0] is really the earliest non‐zero price ─────────
@@ -410,7 +412,7 @@ for i in range(2):
     plt.ylabel('CADAUD')
     plt.show()
 
-
+'''
 #downloading all outputted figures in the file
 import os
 
@@ -425,3 +427,4 @@ for idx, num in enumerate(plt.get_fignums(), start=1):
         dpi=300, bbox_inches='tight'
     )
 plt.close('all')
+'''
