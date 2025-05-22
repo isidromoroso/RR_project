@@ -9,6 +9,7 @@ library(ggplot2)
 library(tidyr)
 library(urca)
 library(tseries)
+library(tidyverse)
 
 # Load and prepare data
 df <- read.csv("data/brent crude nokjpy.csv", check.names = FALSE)
@@ -403,17 +404,42 @@ ggplot(results, aes(x = return * 100)) +
   theme_minimal()
 
 # Heatmap of returns changing Stop Profit/Loss and Holding Period
-return_grid <- results %>%
-  pivot_wider(names_from = s, values_from = return) %>%
-  column_to_rownames("h") %>%
-  as.matrix()
+# Prepare data
+return_df <- results %>%
+  mutate(h = as.factor(h), s = as.factor(s)) %>%
+  mutate(return = return * 100)  # convert to percentage
 
-heatmap(return_grid[rev(rownames(return_grid)), ] * 100,
-        Colv = NA, Rowv = NA,
-        col = colorRampPalette(c("#FFFFFF", "#ff8000", "#e63900", "#b30000", "#600000", "#000000"))(100),
-        scale = "none", margins = c(5,5),
-        xlab = "Stop Profit/Loss", ylab = "Holding Period",
-        main = "Heatmap of Returns (%)")
+# Reverse factor levels of h (to invert y-axis)
+return_df$h <- fct_rev(return_df$h)
+
+# Plot
+ggplot(return_df, aes(x = s, y = h, fill = return)) +
+  geom_tile(color = NA) +  # no tile border
+  scale_fill_gradientn(
+    colors = c("#FFFFFF", "#ff8000", "#e63900", "#b30000", "#600000", "#000000"),
+    name = "Return (%)",
+    guide = guide_colorbar(
+      direction = "vertical", 
+      barwidth = 1, 
+      barheight = 10,
+      title.position = "top"
+    )
+  ) +
+  coord_fixed() +  # makes tiles square
+  labs(
+    x = "Stop Profit/Loss",
+    y = "Holding Period (days)",
+    title = "Heatmap of Returns (%)"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(
+    panel.grid = element_blank(),           # remove grid
+    legend.position = "right",              # legend on right
+    legend.title.align = 0.5,               # center title
+    legend.title = element_text(size = 10), # smaller title
+    legend.text = element_text(size = 9),   # smaller labels
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 
 
 
