@@ -258,8 +258,16 @@ x3=sm.add_constant(x2)
 
 model=sm.OLS(y,x3).fit()
 ero=model.resid
+adf_stat, pvalue, usedlag, nobs, crit_vals, icbest = adf(ero) # Test for stationarity
 
-print(adf(ero)) # Test for stationarity
+print(f"ADF Statistic : {adf_stat}")
+print(f"p-value        : {pvalue}")
+print(f"Used lag       : {usedlag}")
+print(f"Number of obs. : {nobs}")
+print("Critical values:")
+for level, cv in crit_vals.items():
+    print(f"  {level}: {cv}")
+print(f"IC Best        : {icbest}")
 print(model.summary())
 
 # In[14]:
