@@ -1,123 +1,212 @@
-#load libraries
+# ==== Load Required Libraries ====
+# install.packages(c("ggplot2", "dplyr", "readr", "lubridate", "broom", "tidyr", "reshape2", "rsample", "viridis", "pheatmap", "scales"))
+
 library(ggplot2)
 library(dplyr)
 library(readr)
 library(lubridate)
-library(scales)
+library(broom)
+library(tidyr)
 library(reshape2)
-library(gridExtra)
-library(stats)
-library(caret)
-library(ggpubr)
+library(rsample)
+library(viridis)
+library(pheatmap)
+library(scales)
 
-# Set working directory
-setwd("C:\\Users\\Lenovo\\OneDrive\\Pulpit\\RR_project\\repo\\RR_project\\Oil Money project\\data")
+graphics.off()
 
+# ==== Load and Clean Data ====
+data_path <- "C:/Users/Lenovo/OneDrive/Pulpit/RR_project/repo/RR_project/Oil Money project/data/vas crude copaud.csv"
+df <- read_csv(data_path, show_col_types = FALSE)
+df$date <- parse_date_time(df$date, orders = c("ymd", "mdy", "dmy"))
+df <- df %>% filter(!is.na(date)) %>% arrange(date)
 
-# Read data
-df <- read_csv("vas crude copaud.csv")
-df$date <- ymd(df$date)
-df <- df %>% column_to_rownames("date")
+# ==== Output Folder ====
+out_folder <- "COP Data/r_graphs_original"
+dir.create(out_folder, recursive = TRUE, showWarnings = FALSE)
 
-# Regressions: R-squared by predictor
-regression_results <- sapply(setdiff(colnames(df), "cop"), function(var) {
-  model <- lm(cop ~ get(var), data = df)
-  summary(model)$r.squared
-})
-
-regression_results <- sort(regression_results, decreasing = TRUE)
-
-# Bar plot of R-squared values
-colors <- sapply(names(regression_results), function(i) {
-  if (i == 'wti') return('#447294')
-  else if (i == 'brent') return('#8fbcdb')
-  else if (i == 'vasconia') return('#f4d6bc')
-  else return('#cdc8c8')
-})
-
-barplot(regression_results,
-        col = colors,
-        main = "Regressions on COP",
-        ylab = "R Squared",
-        names.arg = toupper(names(regression_results)),
-        las = 2)
-
-
-# Normalize WTI, Brent, Vasconia
-df_norm <- df %>%
-  mutate(across(c(vasconia, brent, wti), ~ .x / .x[1])) %>%
-  select(date = rownames(df), vasconia, brent, wti)
-
-df_long <- melt(df_norm, id.vars = "date")
-
-ggplot(df_long, aes(x = as.Date(date), y = value, color = variable)) +
-  geom_line(alpha = 0.6) +
-  labs(title = "Crude Oil Blends", x = "Date", y = "Normalized Value by 100")
-
-
-# Dual axis plot helper
-dual_axis_plot <- function(x, y1, y2, y1lab, y2lab, title) {
-  df_plot <- data.frame(date = x, y1 = y1, y2 = y2)
-  ggplot(df_plot, aes(x = as.Date(date))) +
-    geom_line(aes(y = y1, color = y1lab)) +
-    geom_line(aes(y = y2, color = y2lab)) +
-    scale_color_manual(values = c(y1lab = "#96CEB4", y2lab = "#FFA633")) +
-    labs(title = title, x = "Date", y = "") +
-    theme_minimal()
+save_plot <- function(filename) {
+  ggsave(file.path(out_folder, filename), dpi = 300, width = 10, height = 5)
 }
 
-# Sample dual axis plots (COP vs Gold)
-dual_axis_plot(rownames(df), df$cop, df$gold, "COP", "Gold LBMA", "COP VS Gold")
+# ==== Figure 1: R-squared Bar Chart ====
+r2_results <- df %>%
+  select(-date, -cop) %>%
+  summarise(across(everything(), ~ summary(lm(df$cop ~ .x))$r.squared)) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "r2") %>%
+  arrange(desc(r2))
 
-# Before/after regression comparison
-before_model <- lm(cop ~ vasconia, data = df[rownames(df) <= "2016", ])
-after_model <- lm(cop ~ vasconia, data = df[rownames(df) >= "2017", ])
-barplot(c(summary(before_model)$r.squared, summary(after_model)$r.squared),
-        names.arg = c("Before 2017", "After 2017"),
-        col = c("#82b74b", "#5DD39E"),
-        ylab = "R Squared",
-        main = "Before/After Regression")
+r2_results$color <- case_when(
+  r2_results$variable == "wti" ~ "#447294",
+  r2_results$variable == "brent" ~ "#8fbcdb",
+  r2_results$variable == "vasconia" ~ "#f4d6bc",
+  TRUE ~ "#cdc8c8"
+)
 
-# Train-test split and prediction band
-library(rsample)
-data_after <- df[rownames(df) >= "2017", ]
-split <- initial_split(data_after, prop = 0.5)
-train <- training(split)
-test <- testing(split)
+fig1 <- ggplot(r2_results, aes(x = reorder(toupper(variable), -r2), y = r2, fill = variable)) +
+  geom_col(width = 0.7, show.legend = FALSE) +
+  scale_fill_manual(values = r2_results$color) +
+  labs(title = "Regressions on COP", x = "Regressors", y = "R Squared") +
+  theme_minimal(base_size = 13)
+print(fig1); save_plot("figure_1.png")
 
-model <- lm(cop ~ vasconia, data = test)
-pred <- predict(model, newdata = test)
-resid_sd <- sd(model$residuals)
+# ==== Figure 2: Normalized Crude Oil Blends ====
+normalize <- function(x) x / x[1]
 
-test$date <- as.Date(rownames(test))
+blend_df <- df %>%
+  mutate(across(c(vasconia, brent, wti), normalize)) %>%
+  pivot_longer(cols = c(vasconia, brent, wti), names_to = "blend", values_to = "value")
 
-ggplot(test, aes(x = date)) +
-  geom_line(aes(y = cop), color = "#ffd604", label = "Actual") +
-  geom_line(aes(y = pred), color = "#FEFBD8", label = "Fitted") +
-  geom_ribbon(aes(ymin = pred - resid_sd, ymax = pred + resid_sd), fill = "#F4A688", alpha = 0.6) +
-  geom_ribbon(aes(ymin = pred - 2 * resid_sd, ymax = pred + 2 * resid_sd), fill = "#8c7544", alpha = 0.4) +
-  labs(title = paste("Colombian Peso Positions\nR Squared:", round(summary(model)$r.squared * 100, 2), "%"),
-       x = "Date", y = "COPAUD")
+fig2 <- ggplot(blend_df, aes(x = date, y = value, color = blend)) +
+  geom_line(alpha = 0.6) +
+  labs(title = "Crude Oil Blends", y = "Normalized Value by 100", x = "Date") +
+  theme_minimal()
+print(fig2); save_plot("figure_2.png")
 
-# Optimization over parameters
-results <- expand.grid(holding = 5:19, stop = seq(0.001, 0.0045, 0.0005))
-results$return <- runif(nrow(results), min = -0.05, max = 0.15)  # demo values
+# ==== Dual Axis Plot Function (Fixed Scaling) ====
+dual_axis_plot <- function(df, y1, y2, label1, label2, title, color1, color2, fname) {
+  df <- df %>%
+    mutate(y1_scaled = rescale(.data[[y1]], to = c(0, 1)),
+           y2_scaled = rescale(.data[[y2]], to = c(0, 1)))
+  
+  p <- ggplot(df, aes(x = date)) +
+    geom_line(aes(y = y1_scaled, color = label1), size = 0.8) +
+    geom_line(aes(y = y2_scaled, color = label2), size = 0.8) +
+    scale_y_continuous(
+      name = paste0(label1, " (rescaled)"),
+      sec.axis = sec_axis(~ ., name = paste0(label2, " (rescaled)"))
+    ) +
+    scale_color_manual(values = setNames(c(color1, color2), c(label1, label2))) +
+    labs(title = title, x = "Date", color = NULL) +
+    theme_minimal()
+  
+  print(p)
+  ggsave(file.path(out_folder, fname), plot = p, dpi = 300, width = 10, height = 5)
+}
 
-# Distribution of return
-ggplot(results, aes(x = return * 100)) +
-  geom_histogram(fill = "#b2660e", bins = 20, width = 2) +
-  labs(title = "Distribution of Return on COP Trading", x = "Return (%)", y = "Frequency")
+# ==== Figures 3–8: Currency Comparisons ====
+dual_axis_plot(df, "cop", "usd", "COP", "USD", "COP vs USD", "#9DE0AD", "#5C4E5F", "figure_3.png")
+dual_axis_plot(df, "cop", "brl", "COP", "BRL", "COP vs BRL", "#a4c100", "#f7db4f", "figure_4.png")
+dual_axis_plot(df, "usd", "mxn", "USD", "MXN", "USD vs MXN", "#F4A688", "#A2836E", "figure_5.png")
+dual_axis_plot(df, "cop", "mxn", "COP", "MXN", "COP vs MXN", "#F26B38", "#B2AD7F", "figure_6.png")
+dual_axis_plot(df, "cop", "vasconia", "COP", "Vasconia", "COP vs Vasconia", "#346830", "#BBAB9B", "figure_7.png")
+dual_axis_plot(df, "cop", "gold", "COP", "Gold", "COP vs Gold", "#96CEB4", "#FFA633", "figure_8.png")
 
-# Heatmap of returns
-heatmap_data <- dcast(results, holding ~ stop, value.var = "return")
-rownames(heatmap_data) <- heatmap_data$holding
-heatmap_data$holding <- NULL
+# ==== Figure 9: Before/After Regression Comparison ====
+before <- df %>% filter(date <= as.Date("2016-12-31"))
+after  <- df %>% filter(date >= as.Date("2017-01-01"))
 
-library(pheatmap)
-pheatmap(as.matrix(heatmap_data) * 100,
-         cluster_rows = FALSE,
-         cluster_cols = FALSE,
-         main = "Profit Heatmap",
-         color = viridis::viridis(100))
+before_r2 <- summary(lm(cop ~ vasconia, data = before))$r.squared
+after_r2  <- summary(lm(cop ~ vasconia, data = after))$r.squared
+
+r2_split_df <- tibble(
+  Period = c("Before 2017", "After 2017"),
+  R2 = c(before_r2, after_r2)
+)
+
+fig9 <- ggplot(r2_split_df, aes(x = Period, y = R2, fill = Period)) +
+  geom_col(show.legend = FALSE) +
+  scale_fill_manual(values = c("#82b74b", "#5DD39E")) +
+  labs(title = "Before/After Regression", y = "R Squared") +
+  theme_minimal()
+print(fig9); save_plot("figure_9.png")
+
+# ==== Figures 10 & 11: Prediction Bands Before and After 2017 ====
+prediction_band_plot <- function(data, period_label, fname) {
+  split <- initial_split(data, prop = 0.5)
+  train <- training(split)
+  test  <- testing(split)
+  
+  model <- lm(cop ~ vasconia, data = train)
+  pred <- predict(model, newdata = test)
+  resid_sd <- sd(model$residuals)
+  
+  test <- test %>% mutate(pred = pred)
+  
+  p <- ggplot(test, aes(x = date)) +
+    geom_line(aes(y = pred), color = "#FEFBD8", size = 1, linetype = "dashed") +
+    geom_line(aes(y = cop), color = "#ffd604") +
+    geom_ribbon(aes(ymin = pred - resid_sd, ymax = pred + resid_sd), fill = "#F4A688", alpha = 0.6) +
+    geom_ribbon(aes(ymin = pred - 2 * resid_sd, ymax = pred + 2 * resid_sd), fill = "#8c7544", alpha = 0.4) +
+    labs(title = paste(period_label, "\nR Squared:", round(summary(model)$r.squared * 100, 2), "%"),
+         x = "Date", y = "COPAUD") +
+    theme_minimal()
+  print(p)
+  save_plot(fname)
+}
+
+prediction_band_plot(before, "Colombian Peso Forecast (Before 2017)", "figure_10.png")
+prediction_band_plot(after,  "Colombian Peso Forecast (After 2017)",  "figure_11.png")
+
+# ==== Figure 12: Strategy Simulation Equity Curve ====
+strategy_data <- df %>% filter(date >= as.Date("2016-01-01")) %>% mutate(spread = scale(cop - vasconia))
+threshold <- 1
+
+signals <- strategy_data %>%
+  mutate(position = case_when(
+    spread > threshold  ~ -1,
+    spread < -threshold ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(return = lag(position) * (cop - lag(cop))) %>%
+  mutate(asset = 100 + cumsum(replace_na(return, 0)))
+
+fig12 <- ggplot(signals, aes(x = date, y = asset)) +
+  geom_line(color = "#01BAEF") +
+  labs(title = "Performance", x = "Date", y = "Total Asset Value") +
+  theme_minimal()
+print(fig12); save_plot("figure_12.png")
+
+# ==== Figure 13: Trade Signal Timing ====
+fig13 <- ggplot(signals, aes(x = date)) +
+  geom_line(aes(y = cop, color = "COP")) +
+  geom_point(data = filter(signals, position != 0), aes(y = cop, color = as.factor(position)), shape = 17, size = 2) +
+  scale_color_manual(values = c("COP" = "black", "-1" = "red", "1" = "green")) +
+  labs(title = "Entry/Exit Signal Plot", y = "COP", color = NULL) +
+  theme_minimal()
+print(fig13); save_plot("figure_13.png")
+
+# ==== Figure 14: Return Distribution ====
+final_returns <- signals %>% filter(!is.na(return))
+fig14 <- ggplot(final_returns, aes(x = return * 100)) +
+  geom_histogram(
+    fill = "#b2660e",
+    color = "white",
+    binwidth = 1,   # matches Python's width=0.45, bins=20 over ~9% range
+    boundary = 0
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(panel.grid = element_blank()) +
+  labs(
+    title = "Distribution of Return on COP Trading",
+    x = "Return (%)",
+    y = "Frequency"
+  )
+print(fig14)
+save_plot("figure_14.png")
+
+
+library(ggplot2)
+
+# Reshape heatmap data for ggplot
+hm_long <- test_results %>%
+  mutate(stop = as.factor(stop))  # keep stop numeric-looking on x-axis
+
+fig15 <- ggplot(hm_long, aes(x = stop, y = factor(holding), fill = return * 100)) +
+  geom_tile(color = "white") +
+  scale_fill_viridis_c(name = "Return(%)", option = "viridis") +
+  theme_minimal(base_size = 13) +
+  labs(
+    title = "Profit Heatmap",
+    x = "Stop Loss/Profit (points)",
+    y = "Position Holding Period (days)"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()
+  )
+
+print(fig15)
+save_plot("figure_15.png")
 
 

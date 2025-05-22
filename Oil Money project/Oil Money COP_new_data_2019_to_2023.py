@@ -57,7 +57,7 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
 # In[3]:
 
 #read dataframe    
-df=pd.read_csv(r'C:\Users\Lenovo\OneDrive\Pulpit\RR_project\repo\RR_project\Oil Money project\data\vas crude copaud.csv',encoding='utf-8')
+df=pd.read_csv(r'COP Data/vas_crude_copaud_new_data.csv',encoding='utf-8')
 df.set_index('date',inplace=True)
 df.index=pd.to_datetime(df.index)
 
@@ -199,16 +199,16 @@ dual_axis_plot(df.index,df['cop'],df['vasconia'],
 # In[10]:
 
 #create before/after regression comparison
-m=sm.OLS(df['cop'][:'2016'],sm.add_constant(df['vasconia'][:'2016'])).fit()
+m=sm.OLS(df['cop'][:'2022'],sm.add_constant(df['vasconia'][:'2022'])).fit()
 before=m.rsquared
-m=sm.OLS(df['cop']['2017':],sm.add_constant(df['vasconia']['2017':])).fit()
+m=sm.OLS(df['cop']['2022':],sm.add_constant(df['vasconia']['2022':])).fit()
 after=m.rsquared
 
 ax=plt.figure(figsize=(10,5)).add_subplot(111)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-plt.bar(['Before 2017',
-         'After 2017'],
+plt.bar(['Before 2022',
+         'After 2022'],
         [before,after],color=['#82b74b', '#5DD39E'])
 plt.ylabel('R Squared')
 plt.title('Before/After Regression')
@@ -220,8 +220,8 @@ plt.show()
 
 #create 1 std, 2 std band before 2017
 x_train,x_test,y_train,y_test=train_test_split(
-        sm.add_constant(df['vasconia'][:'2016']),
-        df['cop'][:'2016'],test_size=0.5,shuffle=False)
+        sm.add_constant(df['vasconia'][:'2021']),
+        df['cop'][:'2021'],test_size=0.5,shuffle=False)
     
 m=sm.OLS(y_test,x_test).fit()
     
@@ -256,10 +256,10 @@ plt.show()
 # In[12]:
 
 
-#create 1 std, 2 std band after 2017
+#create 1 std, 2 std band after 2022
 x_train,x_test,y_train,y_test=train_test_split(
-        sm.add_constant(df['vasconia']['2017':]),
-        df['cop']['2017':],test_size=0.5,shuffle=False)
+        sm.add_constant(df['vasconia']['2022':]),
+        df['cop']['2022':],test_size=0.5,shuffle=False)
     
 m=sm.OLS(y_test,x_test).fit()
     
@@ -294,7 +294,7 @@ plt.show()
 # In[13]:
 
 #shrink data size for better viz
-dataset=df['2016':]
+dataset=df['2021':]
 dataset.reset_index(inplace=True)
 
 
@@ -387,7 +387,7 @@ plt.style.use('default')
 import os
 
 base_dir   = 'COP Data'
-out_folder = os.path.join(base_dir, 'py_graphs_original')
+out_folder = os.path.join(base_dir, 'py_graphs_new_data')
 os.makedirs(out_folder, exist_ok=True)
 
 for idx, num in enumerate(plt.get_fignums(), start=1):
