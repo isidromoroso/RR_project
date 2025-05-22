@@ -11,7 +11,7 @@ library(plotly)
 library(purrr)
 
 # absolute path to your CAD data folder:
-base_dir <- "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data"
+base_dir <- "CAD data"
 
 # create (if needed) a “graphs” subfolder:
 out_folder <- file.path(base_dir, "original_graphs_r")
@@ -20,7 +20,7 @@ if (!dir.exists(out_folder)) {
 }
 
 # Paths to data
-data_dir <- "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/data"
+data_dir <- "data"
 csv_file <- "wcs crude cadaud.csv"
 
 # Load and tidy data

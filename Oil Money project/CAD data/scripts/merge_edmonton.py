@@ -5,8 +5,7 @@ from glob import glob
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────────────
 DATA_DIR = (
-    "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/"
-    "RR_project/Oil Money project/CAD data/Edmonton Data"
+    "CAD data/Edmonton Data"
 )
 OUT_FILE = os.path.join(DATA_DIR, "nrcan-edmonton-wcs-daily.csv")
 # ────────────────────────────────────────────────────────────────────────────────

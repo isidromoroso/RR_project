@@ -4,10 +4,7 @@ import requests
 import pandas as pd
 
 # where to save
-out_dir = (
-    "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/"
-    "RR_project/Oil Money project/CAD data/Edmonton Data"
-)
+out_dir = ("CAD data/Edmonton Data")
 os.makedirs(out_dir, exist_ok=True)
 
 months = [

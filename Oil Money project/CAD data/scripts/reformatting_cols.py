@@ -1,7 +1,7 @@
 import pandas as pd
 
 # load your CSV
-df = pd.read_csv("/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data/merged_with_edmonton_interpolated.csv")
+df = pd.read_csv("CAD data/merged_with_edmonton_interpolated.csv")
 
 # 1. Drop the "aud" column
 df = df.drop(columns="aud")

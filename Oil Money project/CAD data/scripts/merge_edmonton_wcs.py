@@ -1,9 +1,9 @@
 import pandas as pd
 
 # 1) Paths to your two files
-main_fp   = "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data/daily_with_interpolated_wcs.csv"
-edm_fp    = "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data/Edmonton Data/nrcan-edmonton-wcs-daily-interpolated.csv"
-output_fp = "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data/merged_with_edmonton.csv"
+main_fp   = "CAD data/daily_with_interpolated_wcs.csv"
+edm_fp    = "CAD data/Edmonton Data/nrcan-edmonton-wcs-daily-interpolated.csv"
+output_fp = "CAD data/merged_with_edmonton.csv"
 
 # 2) Load and parse dates
 df_main = pd.read_csv(main_fp, parse_dates=["date"])

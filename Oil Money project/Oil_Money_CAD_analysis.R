@@ -19,12 +19,12 @@ library(purrr)
 library(htmlwidgets)
 
 # 2) Prepare output folder ------------------------------------------------
-base_dir   <- "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data"
+base_dir   <- "CAD data"
 out_folder <- file.path(base_dir, "original_graphs_r")
 if (!dir.exists(out_folder)) dir.create(out_folder, recursive = TRUE)
 
 # 3) Load & tidy data -----------------------------------------------------
-data_dir <- "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/data"
+data_dir <- "data"
 csv_file <- "wcs crude cadaud.csv"
 
 oil_df <- read_csv(file.path(data_dir, csv_file), show_col_types = FALSE) %>%

@@ -57,7 +57,7 @@ def dual_axis_plot(xaxis,data1,data2,fst_color='r',
 # In[3]:
 
 #read dataframe    
-df=pd.read_csv(r'C:\Users\Lenovo\OneDrive\Pulpit\RR_project\repo\RR_project\Oil Money project\data\vas crude copaud.csv',encoding='utf-8')
+df=pd.read_csv(r'/data/vas crude copaud.csv',encoding='utf-8')
 df.set_index('date',inplace=True)
 df.index=pd.to_datetime(df.index)
 

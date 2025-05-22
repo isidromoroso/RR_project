@@ -16,7 +16,7 @@ library(purrr)        # map functions
 library(rsample)      # train/test splits
 
 # ── 2. File paths ────────────────────────────────────────────────────
-DATA_DIR <- "/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/data"
+DATA_DIR <- "data"
 CSV_FILE <- "wcs crude cadaud.csv"          # change if you renamed it
 
 # ── 3. Load + tidy data ─────────────────────────────────────────────

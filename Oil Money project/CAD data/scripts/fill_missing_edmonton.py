@@ -2,7 +2,7 @@ import pandas as pd
 
 # 1) Load your merged file
 df = pd.read_csv(
-    '/Users/jackshephard-thorn/Desktop/RR_Project/Repo/RR_project/Oil Money project/CAD data/merged_with_edmonton.csv',
+    'CAD data/merged_with_edmonton.csv',
     parse_dates=['date']
 )
 
