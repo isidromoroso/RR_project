@@ -109,3 +109,21 @@ All files and folders live directly under the **Oil Money project** root:
   3. Fetch and analyze new data (`*_new_data_2019_to_2023.py`).
 
 ---
+
+## Reproducibility
+
+- **Python Libraries**
+  Installed versions for 13 modules
+      copy: stdlib
+      datetime: stdlib
+      imageio: not installed
+      matplotlib: 3.10.1
+      mpl_toolkits: stdlib
+      numpy: 2.2.3
+      oil_money_trading_backtest: stdlib
+      os: stdlib
+      pandas: 2.2.3
+      pathlib: stdlib
+      seaborn: 0.13.2
+      sklearn: 1.6.1
+      statsmodels: 0.14.4
