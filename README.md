@@ -63,7 +63,7 @@ Building on the original work, our team of three will:
    - **Data Sources**:  
      - Exchange rates and major currencies: We fetched daily FX rates for each petrocurrency and related currencies, quoting each pair against a low-correlated benchmark (e.g., JPY, AUD) to isolate oil-driven movements from Yahoo finance library (yfinance).  
      - Oil benchmarks: Brent (yfinance), WCS (yfinance), Edmonton (Natural-Resources.Canada.ca) and Vasconia.
-	 - Interest rates: Norway (Norges Bank), Canada ()
+	 - Interest rates: Norway (Norges Bank)
 	 - GDP yoy growth: Norway (FRED) 
 
 4. **Compare and Interpret**  
