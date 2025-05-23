@@ -6,7 +6,7 @@
 - [Original “Oil Money” Study](#original-oil-money-study)
 - [What we did in this Project](#what-we-did-in-this-project)
 - [Repository Structure](#repository-structure)
-
+- [Reproducibility](#Reproducibility)
 ## Introduction  
 This repository holds our reproducible-research project for the “Reproducible Research” course. We build on the existing **Oil Money** analysis by Je-suis-tm to:
 
@@ -111,8 +111,14 @@ All files and folders live directly under the **Oil Money project** root:
 ---
 
 ## Reproducibility
+- **OS version:**
+  During this project there were used both Windows and macOS with the following version, Windows 11 Home 10.0.22631 and macOS Monterey 
+  Version 12.7.6
 
-- **Python Libraries**
+- **R enviroment:**
+  To recreate the renv environment, install and load renv if necessary using install.packages("renv") and library(renv), then run renv::restore() to install the exact package versions specified in the renv.lock file.
+
+- **Python Libraries:**
   Installed versions for 13 modules
       copy: stdlib
       datetime: stdlib
