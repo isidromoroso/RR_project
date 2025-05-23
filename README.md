@@ -7,6 +7,7 @@
 - [What we did in this Project](#what-we-did-in-this-project)
 - [Repository Structure](#repository-structure)
 - [Reproducibility](#Reproducibility)
+
 ## Introduction  
 This repository holds our reproducible-research project for the “Reproducible Research” course. We build on the existing **Oil Money** analysis by Je-suis-tm to:
 
@@ -61,8 +62,8 @@ Building on the original work, our team of three will:
 3. **Extend to New Data: 2019–2023**  
    - **Data Sources**:  
      - Exchange rates and major currencies: We fetched daily FX rates for each petrocurrency and related currencies, quoting each pair against a low-correlated benchmark (e.g., JPY, AUD) to isolate oil-driven movements from Yahoo finance library (yfinance).  
-     - Oil benchmarks: Brent (yfinance), WCS and Vasconia.
-	 - Interest rates: Norway (Norges Bank)
+     - Oil benchmarks: Brent (yfinance), WCS (yfinance), Edmonton (Natural-Resources.Canada.ca) and Vasconia.
+	 - Interest rates: Norway (Norges Bank), Canada ()
 	 - GDP yoy growth: Norway (FRED) 
 
 4. **Compare and Interpret**  
@@ -87,7 +88,7 @@ All files and folders live directly under the **Oil Money project** root:
 - **Presentation/**  
   A Quarto (`.qmd`) summary comparing original vs. extended-data plots with narrative.  
 - **data/**  
-  Raw CSV time-series (FX rates and oil prices) from the original Oil Money repo (2010–2019).  
+  Raw CSV time-series (FX rates, oil prices and macro information) from the original Oil Money repo (2013–2019).  
 - **oil production/**  
   Author’s oil-production datasets used in auxiliary checks.  
 - **preview/**  
