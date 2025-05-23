@@ -35,13 +35,36 @@ oil_df <- read_csv(file.path(data_dir, csv_file), show_col_types = FALSE) %>%
          wcs, edmonton, wti, gold, jpy, cad)
 
 # 4) Compute R² for each regressor ----------------------------------------
-get_r2 <- function(vec) summary(lm(cad ~ vec, data = oil_df))$r.squared
-vars    <- setdiff(names(oil_df), c("date","cad"))
-r2_tbl  <- tibble(variable = vars) %>%
-  mutate(
-    r2    = map_dbl(variable, ~ get_r2(oil_df[[.x]])),
-    color = c(rep("#9499a6", 7), "#582a20", "#be7052", "#f2c083", "#9499a6", "#9499a6")
-  )
+library(tidyverse)
+
+# Variables to exclude (in addition to "cad" and "date")
+exclude_vars <- c("cad", "date")
+
+# Calculate R² for all variables except the excluded ones
+r2_tbl <- oil_df %>%
+  select(-all_of(exclude_vars)) %>%
+  summarise(across(everything(), ~ summary(lm(oil_df$cad ~ .x))$r.squared)) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "r2") %>%
+  arrange(desc(r2))
+
+# Define colors for some specific variables
+fill_colors <- c(
+  "wcs" = "#582a20",  
+  "edmonton" = "#be7052",
+  "wti" = "#f2c083"
+)
+
+# Variables without assigned color
+other_vars <- setdiff(r2_tbl$variable, names(fill_colors))
+fill_colors <- c(fill_colors, setNames(rep("#9499a6", length(other_vars)), other_vars))
+
+# Plot
+ggplot(r2_tbl, aes(x = reorder(variable, -r2), y = r2, fill = variable)) +
+  geom_col(width = 0.7, show.legend = FALSE) +
+  scale_fill_manual(values = fill_colors) +
+  labs(title = "Regressions on Loonie", y = "R Squared", x = "Regressors") +
+  theme_minimal(base_size = 13) +
+  theme(panel.grid.major.x = element_blank())
 
 # 5) Normalize series ------------------------------------------------------
 norm     <- function(x) x / x[1]
@@ -107,15 +130,17 @@ plot_dual <- function(y1, y2, lab1, lab2, ttl) {
 plots <- list()
 
 # (1) R² bar chart
-p1 <- ggplot(r2_tbl, aes(variable, r2, fill = variable)) +
+p1 <- ggplot(r2_tbl, aes(x = reorder(variable, -r2), y = r2, fill = variable)) +
   geom_col(width = 0.7, show.legend = FALSE) +
-  scale_fill_manual(values = r2_tbl$color) +
+  scale_fill_manual(values = fill_colors) +
   scale_x_discrete(labels = c("Yuan","Sterling","Dollar","Euro","KRW",
                               "MXN","Gas","WCS","Edmonton","WTI","Gold","Yen")) +
   labs(title="Regressions on Loonie", y="R Squared", x="\nRegressors") +
   theme_minimal(base_size=13) +
   theme(panel.grid=element_blank())
-print(p1); plots[[length(plots)+1]] <- recordPlot()
+
+print(p1)
+plots[[length(plots)+1]] <- recordPlot()
 
 # (2) Normalised currencies
 p2 <- curr_tbl %>%
